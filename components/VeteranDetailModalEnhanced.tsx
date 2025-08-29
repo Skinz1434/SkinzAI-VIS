@@ -182,12 +182,12 @@ export function VeteranDetailModalEnhanced({
             />
             <MetricBadge 
               label="Data Quality" 
-              value={`${veteran.profileServices.qualityMetrics.dataCompleteness.toFixed(0)}%`} 
+              value={`${veteran.profileServices.qualityMetrics?.dataCompleteness?.toFixed(0) || 0}%`} 
               color="indigo" 
             />
             <MetricBadge 
               label="Appeals" 
-              value={veteran.profileServices.appeals.length} 
+              value={veteran.profileServices.appeals?.length || 0} 
               subtext="active"
               color="orange" 
             />
@@ -273,7 +273,7 @@ export function VeteranDetailModalEnhanced({
               Last Updated: {new Date(veteran.vetProfileStatus.lastSync).toLocaleString()}
             </span>
             <span className="text-xs text-gray-400">
-              Data Quality: {veteran.profileServices.qualityMetrics.dataCompleteness.toFixed(0)}%
+              Data Quality: {veteran.profileServices.qualityMetrics?.dataCompleteness?.toFixed(0) || 0}%
             </span>
           </div>
           <div className="flex gap-2">
@@ -395,7 +395,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
           System Integrations
         </h3>
         <div className="grid grid-cols-4 gap-4">
-          {Object.entries(veteran.profileServices.integrations).map(([system, data]) => (
+          {veteran.profileServices.integrations && Object.entries(veteran.profileServices.integrations).map(([system, data]) => (
             <div key={system} className="bg-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-white font-medium capitalize">
@@ -427,7 +427,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
           Recent Activity
         </h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
-          {veteran.profileServices.auditTrail.slice(0, 10).map((event, index) => (
+          {veteran.profileServices.auditTrail?.slice(0, 10).map((event, index) => (
             <div key={index} className="flex items-start gap-3 p-3 bg-gray-700 rounded-lg">
               <div className={`p-2 rounded-lg ${
                 event.result === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
@@ -463,7 +463,7 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
           </button>
         </div>
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {veteran.profileServices.communications.messages.map((message) => (
+          {veteran.profileServices.communications?.messages?.map((message) => (
             <div 
               key={message.id}
               onClick={() => setSelectedMessage(message)}
@@ -499,7 +499,7 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Notifications</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {veteran.profileServices.communications.notifications.map((notif) => (
+            {veteran.profileServices.communications?.notifications?.map((notif) => (
               <div key={notif.id} className={`p-3 rounded-lg ${
                 notif.priority === 'high' ? 'bg-red-500/20' :
                 notif.priority === 'medium' ? 'bg-yellow-500/20' : 'bg-gray-700'
