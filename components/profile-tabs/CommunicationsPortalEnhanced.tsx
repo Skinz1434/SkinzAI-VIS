@@ -20,7 +20,7 @@ import {
   Printer, History, Bell, Flag, Zap, Upload, 
   Settings, MoreHorizontal, RefreshCw, AlertTriangle,
   PhoneCall, Video, MessageCircle, Headphones, Hash,
-  BookOpen, Database, FileText as Template, Users, Building
+  BookOpen, Database, FileText as Template, Users, Building, Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
