@@ -108,6 +108,7 @@ export interface DashboardMetrics {
   activeClaiMs: number;
   averageProcessingTime: number;
   vetProfileAccuracy: number;
+  dataAccuracy: number;
   systemHealth: SystemHealth;
   recentActivity: Activity[];
   claimsByStatus: Record<ClaimStatus, number>;
@@ -117,6 +118,7 @@ export interface DashboardMetrics {
 export interface SystemHealth {
   status: 'operational' | 'degraded' | 'down';
   vetProfileApi: ServiceStatus;
+  verificationApi: ServiceStatus;
   profileService: ServiceStatus;
   database: ServiceStatus;
   responseTime: number;

@@ -12,6 +12,7 @@ export function SystemHealth({ health }: SystemHealthProps) {
   const defaultHealth: SystemHealthType = health || {
     status: 'operational',
     vetProfileApi: { status: 'up', responseTime: 142, lastCheck: new Date(), errorRate: 0.3 },
+    verificationApi: { status: 'up', responseTime: 120, lastCheck: new Date(), errorRate: 0.2 },
     profileService: { status: 'up', responseTime: 98, lastCheck: new Date(), errorRate: 0.1 },
     database: { status: 'up', responseTime: 12, lastCheck: new Date(), errorRate: 0 },
     responseTime: 142,

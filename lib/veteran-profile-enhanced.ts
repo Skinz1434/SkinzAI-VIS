@@ -170,12 +170,6 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
         advanceDirectives: true,
         organDonor: true
       },
-      financialInfo: {
-        monthlyIncome: 3500,
-        creditScore: 720,
-        debts: [{ type: 'VA Home Loan', amount: 250000, monthlyPayment: 1500, status: 'Current' }],
-        bankingInfo: { hasDirectDeposit: true, accountType: 'Checking', lastUpdated: new Date() }
-      },
       legalInfo: {
         powerOfAttorney: { name: 'Jane Doe', type: 'Healthcare', date: new Date(2020, 0, 1) },
         powerOfAttorneyHistory: [
@@ -361,6 +355,14 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
         counselorAssigned: string;
         plan: string;
       };
+      pensionBenefits: {
+        eligible: boolean;
+      };
+      spouseBenefits: {
+        eligible: boolean;
+        enrollmentDate?: Date;
+        percentageUsed?: number;
+      };
     };
 
     // Awards & Decorations
@@ -404,6 +406,8 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
 
     // Financial Information
     financial: {
+      monthlyIncome: number;
+      creditScore: number;
       directDeposit: {
         accountType: 'checking' | 'savings';
         routingNumber: string;
@@ -416,6 +420,7 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
         reason: string;
         dateIncurred: Date;
         status: 'active' | 'paid' | 'waived' | 'compromise';
+        monthlyPayment: number;
       }>;
       payments: Array<{
         date: Date;
@@ -543,6 +548,100 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
         relationship: string;
         percentage: number;
       }>;
+    };
+    
+    // Quality Metrics
+    qualityMetrics: {
+      dataCompleteness: number;
+      lastVerification: Date;
+      verificationMethod: string;
+      discrepancies: string[];
+      confidenceScore: number;
+    };
+    
+    // Insurance Plans
+    insurancePlans: Array<{
+      provider: string;
+      planType: string;
+      policyNumber: string;
+      groupNumber: string;
+      effectiveDate: Date;
+      status: string;
+      coverageLevel: string;
+    }>;
+    
+    // Audit Trail
+    auditTrail: Array<{
+      timestamp: Date;
+      action: string;
+      user: string;
+      details: string;
+      system: string;
+    }>;
+    
+    // Communications
+    communications: {
+      messages: Array<{
+        id: string;
+        date: Date;
+        from: string;
+        subject: string;
+        read: boolean;
+        priority: 'low' | 'medium' | 'high';
+        body?: string;
+      }>;
+      notifications: Array<{
+        id: string;
+        date: Date;
+        type: string;
+        message: string;
+        actionRequired: boolean;
+      }>;
+      preferences: {
+        emailNotifications: boolean;
+        smsNotifications: boolean;
+        phoneCallsAllowed: boolean;
+        preferredContactTime: string;
+        language: string;
+      };
+    };
+    
+    // Integrations
+    integrations: {
+      myHealtheVet: {
+        connected: boolean;
+        lastSync: Date | null;
+        status: string;
+        recordsAvailable?: number;
+      };
+      vaBenefits: {
+        connected: boolean;
+        lastSync: Date | null;
+        status: string;
+      };
+      communityCareCar: {
+        connected: boolean;
+        lastSync: Date | null;
+        status: string;
+      };
+      dodSelfService: {
+        connected: boolean;
+        lastSync: Date | null;
+        status: string;
+      };
+      tricare: {
+        connected: boolean;
+        lastSync: Date | null;
+        status: string;
+      };
+    };
+    
+    // Discharge Status
+    dischargeStatus: {
+      type: string;
+      date: Date;
+      characterOfService: string;
+      reenlistmentCode: string;
     };
   };
 
@@ -750,6 +849,19 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
           counselorAssigned: `${['Smith', 'Johnson', 'Williams'][Math.floor(Math.random() * 3)]}, VRC`,
           plan: 'Computer Science Degree',
         },
+        pensionBenefits: {
+          eligible: Math.random() > 0.4,
+          type: ['Disability', 'Non-service', 'Aid & Attendance'][Math.floor(Math.random() * 3)],
+          monthlyAmount: Math.floor(Math.random() * 2000) + 500,
+          effectiveDate: new Date(2020, Math.floor(Math.random() * 12), 1),
+        },
+        spouseBenefits: {
+          eligible: Math.random() > 0.5,
+          dic: Math.random() > 0.3,
+          champva: Math.random() > 0.4,
+          survivorPension: Math.random() > 0.3,
+          educationBenefits: Math.random() > 0.5,
+        },
       },
       
       awards: Array.from({ length: Math.floor(Math.random() * 10) + 3 }, () => ({
@@ -789,6 +901,8 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
       })),
 
       financial: {
+        monthlyIncome: Math.floor(Math.random() * 3000) + 2000,
+        creditScore: Math.floor(Math.random() * 300) + 500,
         directDeposit: {
           accountType: Math.random() > 0.5 ? 'checking' : 'savings',
           routingNumber: `${Math.floor(Math.random() * 900000000) + 100000000}`,
@@ -801,6 +915,7 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
           reason: 'Administrative error',
           dateIncurred: new Date(2023, Math.floor(Math.random() * 12), 1),
           status: ['active', 'paid', 'waived', 'compromise'][Math.floor(Math.random() * 4)] as any,
+          monthlyPayment: Math.floor(Math.random() * 500) + 100,
         })) : [],
         payments: Array.from({ length: 12 }, (_, i) => ({
           date: new Date(2024, i, 1),
@@ -864,24 +979,29 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
 
     analytics: {
       riskScores: {
-        suicideRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as any,
-        homelessnessRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as any,
-        financialRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as any,
-        healthRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as any,
-        substanceAbuseRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as any,
+        healthRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        financialRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        housingRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        mentalHealthRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        suicideRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        homelessnessRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+        substanceAbuseRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
       },
       predictions: {
         nextClaimApprovalProbability: Math.random() * 100,
         estimatedProcessingDays: Math.floor(Math.random() * 180) + 30,
-        ratingIncreaselikelihood: Math.random() * 100,
+        ratingIncreaseLikelihood: Math.random() * 100,
         appealSuccessProbability: Math.random() * 100,
       },
       engagement: {
-        lastPortalLogin: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
-        portalUsageMinutes: Math.floor(Math.random() * 500) + 100,
+        benefitUtilization: 50 + Math.random() * 50,
+        appointmentCompliance: 70 + Math.random() * 30,
+        portalUsage: 40 + Math.random() * 60,
+        claimsActivity: 30 + Math.random() * 70,
         appointmentShowRate: 70 + Math.random() * 30,
         medicationAdherence: 60 + Math.random() * 40,
-        benefitUtilization: 50 + Math.random() * 50,
+        portalUsageMinutes: Math.floor(Math.random() * 500) + 100,
+        lastPortalLogin: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
       },
       comparisons: {
         vsNationalAverage: {
@@ -905,7 +1025,7 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
           amount: 1500 + Math.floor(Math.random() * 500),
         })),
         healthScores: Array.from({ length: 12 }, (_, i) => ({
-          date: new Date(2023, i, 1),
+          month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i] + ' 2023',
           score: 60 + Math.floor(Math.random() * 30),
         })),
         claimHistory: Array.from({ length: 5 }, (_, i) => ({

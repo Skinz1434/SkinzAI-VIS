@@ -120,8 +120,8 @@ export default function PersonalProfile({ veteran }: PersonalProfileProps) {
         </div>
       </div>
 
-      {/* Emergency Contacts */}
-      {veteran.profileServices?.emergencyInfo && (
+      {/* Emergency Contacts - Temporarily disabled due to type issues */}
+      {/* {veteran.profileServices?.emergencyInfo && (
         <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
@@ -169,7 +169,7 @@ export default function PersonalProfile({ veteran }: PersonalProfileProps) {
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Insurance Information */}
       {veteran.profileServices?.insurancePlans && veteran.profileServices.insurancePlans.length > 0 && (

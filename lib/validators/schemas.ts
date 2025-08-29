@@ -110,13 +110,13 @@ export const registerSchema = z.object({
   department: z.string().min(1).max(100)
 });
 
-export const vadirSyncRequestSchema = z.object({
+export const vetProfileSyncRequestSchema = z.object({
   veteranId: z.string().uuid(),
   force: z.boolean().optional().default(false),
   fallbackToDD214: z.boolean().optional().default(true)
 });
 
-export const vadirSyncResponseSchema = z.object({
+export const vetProfileSyncResponseSchema = z.object({
   success: z.boolean(),
   accuracy: z.number().min(0).max(100),
   dataUpdated: z.boolean(),
@@ -166,8 +166,8 @@ export type VeteranUpdate = z.infer<typeof updateVeteranSchema>;
 export type ClaimInput = z.infer<typeof createClaimSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type VadirSyncRequest = z.infer<typeof vadirSyncRequestSchema>;
-export type VadirSyncResponse = z.infer<typeof vadirSyncResponseSchema>;
+export type VetProfileSyncRequest = z.infer<typeof vetProfileSyncRequestSchema>;
+export type VetProfileSyncResponse = z.infer<typeof vetProfileSyncResponseSchema>;
 export type PaginationParams = z.infer<typeof paginationSchema>;
 export type ExportRequest = z.infer<typeof exportRequestSchema>;
 export type BulkOperation = z.infer<typeof bulkOperationSchema>;

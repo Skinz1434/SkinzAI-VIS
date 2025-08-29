@@ -182,12 +182,12 @@ export function VeteranDetailModalEnhanced({
             />
             <MetricBadge 
               label="Data Quality" 
-              value={`${veteran.profileServices.qualityMetrics?.dataCompleteness?.toFixed(0) || 0}%`} 
+              value={`${veteran.qualityMetrics?.dataCompleteness?.toFixed(0) || 0}%`} 
               color="indigo" 
             />
             <MetricBadge 
               label="Appeals" 
-              value={veteran.profileServices.appeals?.length || 0} 
+              value={veteran.appeals?.length || 0} 
               subtext="active"
               color="orange" 
             />
@@ -410,9 +410,9 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
               <p className="text-gray-400 text-xs">
                 Last Sync: {data.lastSync ? new Date(data.lastSync).toLocaleDateString() : 'Never'}
               </p>
-              {system === 'myHealtheVet' && data.connected && (
+              {system === 'myHealtheVet' && data.connected && 'recordsAvailable' in data && (
                 <p className="text-gray-400 text-xs mt-1">
-                  {data.recordsAvailable} records available
+                  {(data as any).recordsAvailable} records available
                 </p>
               )}
             </div>
@@ -429,9 +429,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {veteran.profileServices.auditTrail?.slice(0, 10).map((event, index) => (
             <div key={index} className="flex items-start gap-3 p-3 bg-gray-700 rounded-lg">
-              <div className={`p-2 rounded-lg ${
-                event.result === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-              }`}>
+              <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
                 <Activity className="w-4 h-4" />
               </div>
               <div className="flex-1">
@@ -501,13 +499,11 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {veteran.profileServices.communications?.notifications?.map((notif) => (
               <div key={notif.id} className={`p-3 rounded-lg ${
-                notif.priority === 'high' ? 'bg-red-500/20' :
-                notif.priority === 'medium' ? 'bg-yellow-500/20' : 'bg-gray-700'
+                notif.actionRequired ? 'bg-yellow-500/20' : 'bg-gray-700'
               }`}>
                 <div className="flex items-start gap-2">
                   <Bell className={`w-4 h-4 mt-0.5 ${
-                    notif.priority === 'high' ? 'text-red-400' :
-                    notif.priority === 'medium' ? 'text-yellow-400' : 'text-gray-400'
+                    notif.actionRequired ? 'text-yellow-400' : 'text-gray-400'
                   }`} />
                   <div className="flex-1">
                     <p className="text-white text-sm">{notif.message}</p>
@@ -559,7 +555,7 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
 
 // Helper Components
 function MetricBadge({ label, value, subtext, color, trend }: any) {
-  const colorClasses = {
+  const colorClasses: Record<string, string> = {
     green: 'text-green-400',
     blue: 'text-blue-400',
     yellow: 'text-yellow-400',
@@ -574,7 +570,7 @@ function MetricBadge({ label, value, subtext, color, trend }: any) {
     <div className="text-center">
       <p className="text-gray-400 text-xs">{label}</p>
       <div className="flex items-center justify-center gap-1">
-        <p className={`text-lg font-bold ${colorClasses[color]}`}>{value}</p>
+        <p className={`text-lg font-bold ${colorClasses[color as string] || 'text-gray-400'}`}>{value}</p>
         {trend === 'up' && <TrendingUp className="w-3 h-3 text-green-400" />}
       </div>
       {subtext && <p className="text-gray-500 text-xs">{subtext}</p>}

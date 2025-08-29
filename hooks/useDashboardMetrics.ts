@@ -12,10 +12,17 @@ export function useDashboardMetrics() {
         totalVeterans: 12847,
         activeClaiMs: 3421,
         averageProcessingTime: 4.2,
-        vadirAccuracy: 97.3,
+        dataAccuracy: 97.3,
+        vetProfileAccuracy: 98.5,
         systemHealth: {
           status: 'operational',
-          vadirApi: {
+          vetProfileApi: {
+            status: 'up',
+            responseTime: 142,
+            lastCheck: new Date(),
+            errorRate: 0.3
+          },
+          verificationApi: {
             status: 'up',
             responseTime: 142,
             lastCheck: new Date(),

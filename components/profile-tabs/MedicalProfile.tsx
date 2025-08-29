@@ -371,17 +371,17 @@ export default function MedicalProfile({ veteran }: MedicalProfileProps) {
               <div key={index} className="bg-skinz-bg-tertiary/50 rounded-lg p-4 border border-skinz-border/50">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="text-white font-semibold">{record.type}</p>
+                    <p className="text-white font-semibold">{record.chiefComplaint}</p>
                     <p className="text-skinz-text-secondary text-sm">{record.provider} - {record.facility}</p>
                   </div>
                   <p className="text-skinz-text-secondary text-sm">
                     {new Date(record.date).toLocaleDateString()}
                   </p>
                 </div>
-                <p className="text-skinz-text-secondary text-sm mt-2">{record.notes}</p>
-                {record.outcome && (
+                <p className="text-skinz-text-secondary text-sm mt-2">{record.diagnosis} - {record.treatment}</p>
+                {record.followUp && (
                   <div className="mt-2 pt-2 border-t border-skinz-border/50">
-                    <p className="text-skinz-accent text-sm">Outcome: {record.outcome}</p>
+                    <p className="text-skinz-accent text-sm">Follow-up: {record.followUp}</p>
                   </div>
                 )}
               </div>

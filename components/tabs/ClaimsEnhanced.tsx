@@ -443,7 +443,7 @@ export default function ClaimsEnhanced({ veterans }: ClaimsEnhancedProps) {
 
 // Metric Card Component
 function MetricCard({ title, value, icon, color, change, trend, subtitle, percentage }: any) {
-  const colorClasses = {
+  const colorClasses: Record<string, string> = {
     blue: 'from-blue-500 to-blue-600',
     yellow: 'from-yellow-500 to-yellow-600',
     green: 'from-green-500 to-green-600',
@@ -454,7 +454,7 @@ function MetricCard({ title, value, icon, color, change, trend, subtitle, percen
   return (
     <div className="bg-skinz-bg-secondary rounded-xl p-5 border border-skinz-border">
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color]} rounded-lg flex items-center justify-center`}>
+        <div className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color as string] || 'from-gray-500 to-gray-600'} rounded-lg flex items-center justify-center`}>
           {icon}
         </div>
         {(change || trend) && (

@@ -87,7 +87,10 @@ export default function FinancialProfile({ veteran }: FinancialProfileProps) {
                 <div className="flex justify-between items-start mb-2">
                   <p className="text-white font-medium">{debt.type}</p>
                   <span className={`text-xs px-2 py-1 rounded ${
-                    debt.status === 'Current' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                    debt.status === 'active' ? 'bg-yellow-500/20 text-yellow-400' : 
+                    debt.status === 'paid' ? 'bg-green-500/20 text-green-400' :
+                    debt.status === 'waived' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-gray-500/20 text-gray-400'
                   }`}>
                     {debt.status}
                   </span>

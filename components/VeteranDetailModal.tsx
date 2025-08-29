@@ -78,7 +78,7 @@ export function VeteranDetailModal({ veteran, isOpen, onClose, onSync, isSyncing
               <QuickStat label="Service Years" value={veteran.mpr.totalServiceYears} color="blue" />
               <QuickStat label="Monthly Benefit" value={`$${veteran.benefits.monthlyAmount}`} color="yellow" />
               <QuickStat label="Claims" value={veteran.claims.length} color="purple" />
-              <QuickStat label="Vadir Accuracy" value={`${veteran.vetProfileStatus.accuracy.toFixed(1)}%`} color="cyan" />
+              <QuickStat label="Profile Accuracy" value={`${veteran.vetProfileStatus.accuracy.toFixed(1)}%`} color="cyan" />
               <QuickStat label="Last Sync" value={new Date(veteran.vetProfileStatus.lastSync).toLocaleDateString()} color="gray" />
             </div>
           </div>
@@ -539,7 +539,7 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-semibold mb-2">Vadir Sync Status</h3>
+            <h3 className="text-xl font-semibold mb-2">Profile Sync Status</h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-blue-100 text-sm">Accuracy</p>
@@ -603,7 +603,7 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
             <span className="font-semibold">DD-214 Fallback Used</span>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Vadir API was unavailable. Data was retrieved from DD-214 records.
+            Vet Profile API was unavailable. Data was retrieved from DD-214 records.
           </p>
         </div>
       )}

@@ -289,7 +289,7 @@ export default function OverviewEnhanced({ accuracy, veteranCount, veterans = []
 
 // KPI Card Component
 function KPICard({ title, value, change, target, status, trend, sparkline, icon, color }: any) {
-  const colorClasses = {
+  const colorClasses: Record<string, string> = {
     cyan: 'from-cyan-500 to-cyan-600',
     blue: 'from-blue-500 to-blue-600',
     purple: 'from-purple-500 to-purple-600',
@@ -300,7 +300,7 @@ function KPICard({ title, value, change, target, status, trend, sparkline, icon,
   return (
     <div className="bg-skinz-bg-secondary rounded-xl p-5 border border-skinz-border hover:border-skinz-accent/50 transition-all">
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color]} rounded-lg flex items-center justify-center`}>
+        <div className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color as string] || 'from-gray-500 to-gray-600'} rounded-lg flex items-center justify-center`}>
           {icon}
         </div>
         {trend && (
@@ -329,7 +329,7 @@ function KPICard({ title, value, change, target, status, trend, sparkline, icon,
 
 // Activity Item Component
 function ActivityItem({ type, message, time }: any) {
-  const icons = {
+  const icons: Record<string, React.ReactNode> = {
     success: <CheckCircle className="w-4 h-4 text-green-400" />,
     warning: <AlertCircle className="w-4 h-4 text-yellow-400" />,
     error: <AlertTriangle className="w-4 h-4 text-red-400" />,
@@ -338,7 +338,7 @@ function ActivityItem({ type, message, time }: any) {
 
   return (
     <div className="flex items-start gap-3 p-3 bg-skinz-bg-tertiary/30 rounded-lg">
-      {icons[type]}
+      {icons[type as string] || <Info className="w-4 h-4 text-gray-400" />}
       <div className="flex-1">
         <p className="text-sm text-white">{message}</p>
         <p className="text-xs text-gray-500 mt-1">{time}</p>

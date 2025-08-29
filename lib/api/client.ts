@@ -89,10 +89,11 @@ export const veteransApi = {
   delete: (id: string) => api.delete(`/api/v1/veterans/${id}`)
 };
 
-export const vadirApi = {
-  sync: (data: any) => api.post('/api/v1/vadir/sync', data),
-  status: () => api.get('/api/v1/vadir/status'),
-  accuracy: () => api.get('/api/v1/vadir/accuracy')
+export const vetProfileApi = {
+  sync: (data: any) => api.post('/api/v1/vet-profile/sync', data),
+  status: () => api.get('/api/v1/vet-profile/status'),
+  accuracy: () => api.get('/api/v1/vet-profile/accuracy'),
+  mpdSync: (data: any) => api.post('/api/v1/mpd/sync', data)
 };
 
 export const claimsApi = {
