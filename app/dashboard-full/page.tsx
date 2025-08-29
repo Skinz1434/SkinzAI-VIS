@@ -24,7 +24,9 @@ import {
   Clock,
   ChevronRight,
   Grid,
-  List
+  List,
+  Brain,
+  ExternalLink
 } from 'lucide-react';
 import { mockFetchVeterans, mockSyncVetProfile, mockProcessClaim, mockExportData } from '@/lib/mock-data';
 import { Veteran, Branch, DischargeStatus, ClaimStatus } from '@/types';
@@ -180,6 +182,14 @@ export default function DashboardFullPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <a 
+                href="/va-claims-ai"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+              >
+                <Brain className="w-5 h-5" />
+                <span className="font-semibold">VA Claims AI</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
               <div className="text-right">
                 <p className="text-xs text-gray-400">Vet Profile Accuracy</p>
                 <p className="text-lg font-bold text-green-400">{vetProfileAccuracy.toFixed(1)}%</p>
