@@ -597,8 +597,10 @@ function ReportsTab({ veterans }: any) {
 }
 
 // Helper Components
-function MetricCard({ title, value, subtitle, color }: any) {
-  const colorClasses = {
+type MetricColor = 'green' | 'blue' | 'yellow' | 'red' | 'gray';
+
+function MetricCard({ title, value, subtitle, color }: { title: string; value: string; subtitle: string; color: MetricColor }) {
+  const colorClasses: Record<MetricColor, string> = {
     green: 'text-green-400 bg-green-500/20',
     blue: 'text-blue-400 bg-blue-500/20',
     yellow: 'text-yellow-400 bg-yellow-500/20',
@@ -615,8 +617,8 @@ function MetricCard({ title, value, subtitle, color }: any) {
   );
 }
 
-function ActivityItem({ icon: Icon, text, time, color }: any) {
-  const colorClasses = {
+function ActivityItem({ icon: Icon, text, time, color }: { icon: any; text: string; time: string; color: MetricColor }) {
+  const colorClasses: Record<MetricColor, string> = {
     green: 'text-green-400 bg-green-500/20',
     blue: 'text-blue-400 bg-blue-500/20',
     yellow: 'text-yellow-400 bg-yellow-500/20',
