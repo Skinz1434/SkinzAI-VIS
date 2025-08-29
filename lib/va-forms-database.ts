@@ -777,13 +777,13 @@ COMBINED RATING: {{combinedRating}}%
 EFFECTIVE DATE: {{effectiveDate}}
 
 MONTHLY COMPENSATION:
-Basic Rate: ${{basicRate}}
-Additional for Dependents: ${{dependentRate}}
-Total Monthly Payment: ${{totalMonthly}}
+Basic Rate: \${{basicRate}}
+Additional for Dependents: \${{dependentRate}}
+Total Monthly Payment: \${{totalMonthly}}
 
 PAYMENT INFORMATION:
 • First payment expected: {{firstPaymentDate}}
-• Retroactive amount: ${{retroAmount}}
+• Retroactive amount: \${{retroAmount}}
 • Payment method: {{paymentMethod}}
 
 ADDITIONAL BENEFITS YOU MAY BE ELIGIBLE FOR:

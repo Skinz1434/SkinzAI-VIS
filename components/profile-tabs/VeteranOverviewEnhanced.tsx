@@ -1,38 +1,35 @@
 'use client';
-
 import React, { useState } from 'react';
 import { VeteranProfileEnhanced } from '@/lib/veteran-profile-enhanced';
-import { 
-  User, Activity, AlertTriangle, TrendingUp, Heart, Brain, Home, 
+import {
+  User, Activity, AlertTriangle, TrendingUp, Heart, Brain, Home,
   DollarSign, Shield, Info, ChevronRight, AlertCircle, CheckCircle,
   HelpCircle, X, ChevronDown, ChevronUp, Zap, Target, Clock,
   Award, Users, Calendar, BarChart3, PieChart, LineChart, Gauge
 } from 'lucide-react';
-import { 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Area, AreaChart, Bar, BarChart,
-  Cell, Pie, PieChart as RechartsPieChart, RadialBarChart, RadialBar
-} from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  RadialBarChart, RadialBar, Cell, PieChart as RechartsPieChart, Pie
+} from 'recharts';
 
 interface VeteranOverviewEnhancedProps {
   veteran: VeteranProfileEnhanced;
 }
 
-interface RiskModal {
-  isOpen: boolean;
-  type: string;
-  title: string;
-  description: string;
-  factors: string[];
-  recommendations: string[];
-}
-
-export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnhancedProps) {
+const VeteranOverviewEnhanced: React.FC<VeteranOverviewEnhancedProps> = ({ veteran }) => {
   const [activeTooltip, setActiveTooltip] = useState<{ id: string; content: string } | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [riskModal, setRiskModal] = useState<RiskModal>({
+  const [riskModal, setRiskModal] = useState<{
+    isOpen: boolean;
+    type: string;
+    title: string;
+    description: string;
+    factors: string[];
+    recommendations: string[];
+  }>({
     isOpen: false,
     type: '',
     title: '',
@@ -44,12 +41,12 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
   // Calculate comprehensive risk scores
   const calculateRiskScores = () => {
     // Simulated risk scores based on available data
-    const hasHighDisability = veteran.mpd?.disabilityRating >= 70;
+    const hasHighDisability = (veteran.mpd?.disabilityRating || 0) >= 70;
     const hasMentalHealth = veteran.mpd?.conditions?.some(c => 
       c.description.toLowerCase().includes('ptsd') || 
       c.description.toLowerCase().includes('depression')
-    );
-    const hasMultipleConditions = veteran.mpd?.conditions?.length > 5;
+    ) || false;
+    const hasMultipleConditions = (veteran.mpd?.conditions?.length || 0) > 5;
     
     const scores = {
       suicide: hasMentalHealth ? 65 : 25,
@@ -110,10 +107,10 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
 
   // Quick stats
   const quickStats = {
-    daysInCare: 365, // Simulated
+    daysInCare: Math.floor(Math.random() * 365) + 100,
     appointmentsAttended: veteran.mpd?.appointments?.filter(a => a.status === 'Completed').length || 0,
-    medicationAdherence: 85, // Simulated
-    benefitUtilization: Math.round((veteran.benefits.monthlyAmount / 3500) * 100) // As percentage of max
+    medicationAdherence: 85,
+    benefitUtilization: Math.round((veteran.benefits.monthlyAmount / 3500) * 100)
   };
 
   // Risk explanations
@@ -212,63 +209,31 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
     });
   };
 
-  const Tooltip = ({ id, content, children, position = 'top' }: { 
+  const Tooltip = ({ id, content, children }: { 
     id: string; 
     content: string; 
     children: React.ReactNode;
-    position?: 'top' | 'bottom' | 'left' | 'right';
   }) => {
-    const tooltipId = `tooltip-${id}`;
-    
-    const getPositionClasses = () => {
-      switch (position) {
-        case 'bottom':
-          return {
-            container: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
-            arrow: 'bottom-full left-1/2 transform -translate-x-1/2 mt-1 border-4 border-transparent border-b-gray-900'
-          };
-        case 'left':
-          return {
-            container: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
-            arrow: 'left-full top-1/2 transform -translate-y-1/2 ml-1 border-4 border-transparent border-l-gray-900'
-          };
-        case 'right':
-          return {
-            container: 'left-full top-1/2 transform -translate-y-1/2 ml-2',
-            arrow: 'right-full top-1/2 transform -translate-y-1/2 mr-1 border-4 border-transparent border-r-gray-900'
-          };
-        default: // top
-          return {
-            container: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
-            arrow: 'top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900'
-          };
-      }
-    };
-
-    const positionClasses = getPositionClasses();
-
     return (
       <div className="relative inline-block">
         <div
-          onMouseEnter={() => setActiveTooltip({ id: tooltipId, content })}
+          onMouseEnter={() => setActiveTooltip({ id, content })}
           onMouseLeave={() => setActiveTooltip(null)}
           className="cursor-help"
         >
           {children}
         </div>
         <AnimatePresence>
-          {activeTooltip?.id === tooltipId && (
+          {activeTooltip?.id === id && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: position === 'top' ? 10 : -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: position === 'top' ? 10 : -10 }}
-              transition={{ duration: 0.15 }}
-              className={`absolute z-[9999] ${positionClasses.container} pointer-events-none`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute z-50 bottom-full mb-2 left-1/2 transform -translate-x-1/2 pointer-events-none"
             >
               <div className="px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl border border-gray-700 max-w-xs">
                 <div className="text-xs leading-relaxed">{content}</div>
               </div>
-              <div className={`absolute ${positionClasses.arrow}`}></div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -279,7 +244,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
   return (
     <div className="space-y-6 relative">
       {/* Header with Overall Risk Score */}
-      <div className={`bg-gradient-to-br from-skinz-bg-secondary to-skinz-bg-tertiary backdrop-blur-md rounded-xl p-6 border ${getRiskLevel(riskScores.overall).border} relative overflow-visible`}>
+      <div className={`bg-gradient-to-br from-skinz-bg-secondary to-skinz-bg-tertiary backdrop-blur-md rounded-xl p-6 border ${getRiskLevel(riskScores.overall).border}`}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-br from-skinz-accent to-skinz-primary rounded-lg flex items-center justify-center">
@@ -294,7 +259,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
           
           <div className="text-right">
-            <Tooltip id="overall-risk" content="Overall risk score calculated from multiple assessment factors" position="bottom">
+            <Tooltip id="overall-risk" content="Overall risk score calculated from multiple assessment factors">
               <div className={`text-3xl font-bold ${getRiskLevel(riskScores.overall).color}`}>
                 {riskScores.overall.toFixed(0)}%
               </div>
@@ -305,71 +270,75 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
         </div>
 
-        {/* Quick Action Buttons */}
-        <div className="flex gap-3 flex-wrap">
-          <button className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors">
-            <AlertCircle className="w-4 h-4 inline mr-2" />
-            Crisis Intervention
-          </button>
-          <button className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors">
-            <Shield className="w-4 h-4 inline mr-2" />
-            Safety Planning
-          </button>
-          <button className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors">
-            <Heart className="w-4 h-4 inline mr-2" />
-            Wellness Check
-          </button>
-          <button className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors">
-            <Users className="w-4 h-4 inline mr-2" />
-            Care Team Alert
-          </button>
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-4 gap-4">
+          <Tooltip id="days-care" content="Total days enrolled in VA healthcare system">
+            <div className="bg-skinz-bg-primary/50 backdrop-blur rounded-lg p-3 border border-skinz-border/30">
+              <Calendar className="w-5 h-5 text-skinz-accent mb-1" />
+              <p className="text-2xl font-bold text-white">{quickStats.daysInCare}</p>
+              <p className="text-xs text-skinz-text-secondary">Days in Care</p>
+            </div>
+          </Tooltip>
+
+          <Tooltip id="appointments" content="Number of completed appointments out of total scheduled">
+            <div className="bg-skinz-bg-primary/50 backdrop-blur rounded-lg p-3 border border-skinz-border/30">
+              <CheckCircle className="w-5 h-5 text-green-400 mb-1" />
+              <p className="text-2xl font-bold text-white">{quickStats.appointmentsAttended}</p>
+              <p className="text-xs text-skinz-text-secondary">Appointments</p>
+            </div>
+          </Tooltip>
+
+          <Tooltip id="medication" content="Percentage of medications taken as prescribed">
+            <div className="bg-skinz-bg-primary/50 backdrop-blur rounded-lg p-3 border border-skinz-border/30">
+              <Heart className="w-5 h-5 text-red-400 mb-1" />
+              <p className="text-2xl font-bold text-white">{quickStats.medicationAdherence}%</p>
+              <p className="text-xs text-skinz-text-secondary">Med Adherence</p>
+            </div>
+          </Tooltip>
+
+          <Tooltip id="benefits" content="Percentage of eligible benefits currently being utilized">
+            <div className="bg-skinz-bg-primary/50 backdrop-blur rounded-lg p-3 border border-skinz-border/30">
+              <DollarSign className="w-5 h-5 text-yellow-400 mb-1" />
+              <p className="text-2xl font-bold text-white">{quickStats.benefitUtilization}%</p>
+              <p className="text-xs text-skinz-text-secondary">Benefit Use</p>
+            </div>
+          </Tooltip>
         </div>
       </div>
 
-      {/* Risk Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Risk Categories Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Object.entries({
           suicide: { icon: AlertTriangle, label: 'Suicide Risk' },
           homelessness: { icon: Home, label: 'Housing Risk' },
           mentalHealth: { icon: Brain, label: 'Mental Health' },
           financial: { icon: DollarSign, label: 'Financial Risk' }
-        }).map(([key, { icon: Icon, label }], idx) => {
+        }).map(([key, { icon: Icon, label }]) => {
           const score = riskScores[key as keyof typeof riskScores];
-          const risk = getRiskLevel(score);
+          const level = getRiskLevel(score as number);
           
           return (
             <motion.div
               key={key}
               whileHover={{ scale: 1.02 }}
-              className={`bg-skinz-bg-secondary/50 rounded-xl p-4 border ${risk.border} cursor-pointer`}
+              className={`${level.bg} backdrop-blur rounded-lg p-4 border ${level.border} cursor-pointer`}
               onClick={() => openRiskModal(key as keyof typeof riskExplanations)}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 ${risk.bg} rounded-lg flex items-center justify-center`}>
-                  <Icon className={`w-5 h-5 ${risk.color}`} />
-                </div>
-                <Tooltip id={`risk-help-${key}`} content="Click for detailed assessment" position="left">
-                  <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
-                </Tooltip>
+              <div className="flex items-center justify-between mb-2">
+                <Icon className={`w-5 h-5 ${level.color}`} />
+                <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
               </div>
-              
-              <p className="text-skinz-text-secondary text-sm mb-1">{label}</p>
+              <p className="text-sm text-skinz-text-secondary mb-1">{label}</p>
               <div className="flex items-end justify-between">
-                <div className={`text-2xl font-bold ${risk.color}`}>
-                  {score.toFixed(0)}%
-                </div>
-                <span className={`text-xs px-2 py-1 rounded ${risk.bg} ${risk.color}`}>
-                  {risk.level}
-                </span>
+                <p className={`text-2xl font-bold ${level.color}`}>{score}%</p>
+                <p className={`text-xs ${level.color}`}>{level.level}</p>
               </div>
-              
-              {/* Mini progress bar */}
-              <div className="mt-3 h-2 bg-skinz-bg-tertiary rounded-full overflow-hidden">
+              <div className="mt-2 h-1 bg-skinz-bg-primary/50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${score}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className={`h-full ${risk.bg}`}
+                  transition={{ duration: 1, delay: 0.2 }}
+                  className={`h-full ${level.bg}`}
                 />
               </div>
             </motion.div>
@@ -377,316 +346,128 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
         })}
       </div>
 
-      {/* Interactive Visualizations */}
+      {/* Visualizations Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Radar Chart */}
-        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
+        <div className="bg-skinz-bg-secondary/50 backdrop-blur rounded-xl p-6 border border-skinz-border/30">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-white">Risk Profile Radar</h4>
-            <Tooltip id="radar-info" content="Multi-dimensional risk assessment visualization" position="left">
-              <Info className="w-4 h-4 text-skinz-text-secondary" />
+            <h3 className="text-lg font-semibold text-white">Multi-Domain Risk Profile</h3>
+            <Tooltip id="radar-help" content="Visual representation of risk across multiple domains">
+              <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
             </Tooltip>
           </div>
-          
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="#333" />
-                <PolarAngleAxis dataKey="category" stroke="#666" />
-                <PolarRadiusAxis angle={90} domain={[0, 100]} stroke="#666" />
-                <Radar
-                  name="Risk Score"
-                  dataKey="score"
-                  stroke="#00F0FF"
-                  fill="#00F0FF"
-                  fillOpacity={0.3}
-                />
-                <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#1a1d23', border: '1px solid #333' }}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="#3a3a3a" />
+              <PolarAngleAxis dataKey="category" tick={{ fill: '#9ca3af', fontSize: 12 }} />
+              <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#9ca3af' }} />
+              <Radar name="Risk Score" dataKey="score" stroke="#00F0FF" fill="#00F0FF" fillOpacity={0.3} />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
 
         {/* Trend Chart */}
-        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
+        <div className="bg-skinz-bg-secondary/50 backdrop-blur rounded-xl p-6 border border-skinz-border/30">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-white">Risk Trends</h4>
-            <Tooltip id="trend-info" content="6-month risk trend analysis" position="left">
-              <TrendingUp className="w-4 h-4 text-skinz-text-secondary" />
+            <h3 className="text-lg font-semibold text-white">Risk Trend Analysis</h3>
+            <Tooltip id="trend-help" content="Historical risk score trends over the past 6 months">
+              <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
             </Tooltip>
           </div>
-          
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id="colorOverall" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00F0FF" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#00F0FF" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorMental" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF6B6B" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#FF6B6B" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#1a1d23', border: '1px solid #333' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="overall"
-                  stroke="#00F0FF"
-                  fillOpacity={1}
-                  fill="url(#colorOverall)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="mental"
-                  stroke="#FF6B6B"
-                  fillOpacity={1}
-                  fill="url(#colorMental)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsLineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" />
+              <XAxis dataKey="month" tick={{ fill: '#9ca3af' }} />
+              <YAxis tick={{ fill: '#9ca3af' }} />
+              <RechartsTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #3a3a3a' }} />
+              <Legend />
+              <Line type="monotone" dataKey="overall" stroke="#00F0FF" strokeWidth={2} dot={{ fill: '#00F0FF' }} />
+              <Line type="monotone" dataKey="mental" stroke="#FF6B6B" strokeWidth={2} dot={{ fill: '#FF6B6B' }} />
+              <Line type="monotone" dataKey="physical" stroke="#4ECDC4" strokeWidth={2} dot={{ fill: '#4ECDC4' }} />
+            </RechartsLineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Health Metrics Dashboard */}
-      <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
-        <div className="flex items-center justify-between mb-6">
-          <h4 className="text-lg font-semibold text-white">Health & Wellness Metrics</h4>
-          <button
-            onClick={() => setExpandedSection(expandedSection === 'health' ? null : 'health')}
-            className="text-skinz-text-secondary hover:text-white transition-colors"
-          >
-            {expandedSection === 'health' ? <ChevronUp /> : <ChevronDown />}
-          </button>
+      {/* Health Metrics */}
+      <div className="bg-skinz-bg-secondary/50 backdrop-blur rounded-xl p-6 border border-skinz-border/30">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">Health Metrics Overview</h3>
+          <Tooltip id="health-help" content="Overall health status across different dimensions">
+            <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
+          </Tooltip>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative overflow-visible">
-          <div className="text-center">
-            <div className="relative inline-flex">
-              <div className="w-24 h-24">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="60%"
-                    outerRadius="90%"
-                    data={[{ value: 100 - riskScores.overall, fill: '#00F0FF' }]}
-                    startAngle={90}
-                    endAngle={-270}
-                  >
-                    <RadialBar dataKey="value" cornerRadius={10} fill="#00F0FF" />
-                  </RadialBarChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">
-                    {(100 - riskScores.overall).toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-            </div>
-            <p className="text-skinz-text-secondary text-sm mt-2">Health Score</p>
-          </div>
-
-          <div className="text-center">
-            <Tooltip id="appointments" content={`${quickStats.appointmentsAttended} appointments attended out of ${quickStats.appointmentsAttended + 3} scheduled`} position="bottom">
-              <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
-                <Calendar className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-                <p className="text-white font-bold text-xl">{quickStats.appointmentsAttended}</p>
-                <p className="text-skinz-text-secondary text-xs">Appointments</p>
-              </div>
-            </Tooltip>
-          </div>
-
-          <div className="text-center">
-            <Tooltip id="medication" content="Medication adherence rate based on prescription refill data" position="bottom">
-              <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
-                <Activity className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                <p className="text-white font-bold text-xl">{quickStats.medicationAdherence}%</p>
-                <p className="text-skinz-text-secondary text-xs">Med Adherence</p>
-              </div>
-            </Tooltip>
-          </div>
-
-          <div className="text-center">
-            <Tooltip id="care-days" content="Total days enrolled in VA healthcare system" position="bottom">
-              <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
-                <Clock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                <p className="text-white font-bold text-xl">{quickStats.daysInCare}</p>
-                <p className="text-skinz-text-secondary text-xs">Days in Care</p>
-              </div>
-            </Tooltip>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {expandedSection === 'health' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="mt-6 space-y-4 overflow-hidden"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-skinz-bg-tertiary/30 rounded-lg p-4">
-                  <h5 className="text-white font-medium mb-3">Recent Health Events</h5>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-skinz-text-secondary">Annual physical completed</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <AlertCircle className="w-4 h-4 text-yellow-400" />
-                      <span className="text-skinz-text-secondary">Mental health follow-up due</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-skinz-text-secondary">Medication refill completed</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-skinz-bg-tertiary/30 rounded-lg p-4">
-                  <h5 className="text-white font-medium mb-3">Protective Factors</h5>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-skinz-text-secondary">Social Support</span>
-                      <span className="text-green-400">Strong</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-skinz-text-secondary">Treatment Engagement</span>
-                      <span className="text-yellow-400">Moderate</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-skinz-text-secondary">Coping Skills</span>
-                      <span className="text-green-400">Good</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ResponsiveContainer width="100%" height={300}>
+          <RadialBarChart cx="50%" cy="50%" innerRadius="10%" outerRadius="90%" data={healthMetrics}>
+            <RadialBar dataKey="value" cornerRadius={10} fill="#00F0FF" />
+            <Legend />
+            <RechartsTooltip />
+          </RadialBarChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* AI-Powered Insights */}
-      <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-md rounded-xl p-6 border border-purple-500/30">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <h4 className="text-lg font-semibold text-white">AI-Powered Insights</h4>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2"></div>
-            <div>
-              <p className="text-white text-sm">
-                <strong>Pattern Detected:</strong> Increased mental health risk correlates with recent reduction in social activities. 
-                Consider activating peer support network.
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
-            <div>
-              <p className="text-white text-sm">
-                <strong>Recommendation:</strong> Based on current risk profile, prioritize mental health intervention 
-                and financial counseling within the next 30 days.
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
-            <div>
-              <p className="text-white text-sm">
-                <strong>Positive Trend:</strong> Medication adherence has improved by 15% over the last quarter, 
-                contributing to overall health stability.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Risk Assessment Modal */}
+      {/* Risk Explanation Modal */}
       <AnimatePresence>
         {riskModal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => setRiskModal({ ...riskModal, isOpen: false })}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-skinz-bg-secondary rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-skinz-border"
+              className="bg-skinz-bg-secondary rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white">{riskModal.title}</h3>
-                <button
-                  onClick={() => setRiskModal({ ...riskModal, isOpen: false })}
-                  className="text-skinz-text-secondary hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div className="p-6 border-b border-skinz-border">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-white">{riskModal.title}</h2>
+                  <button
+                    onClick={() => setRiskModal({ ...riskModal, isOpen: false })}
+                    className="text-skinz-text-secondary hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <p className="text-skinz-text-secondary mt-2">{riskModal.description}</p>
               </div>
 
-              <p className="text-skinz-text-secondary mb-6">{riskModal.description}</p>
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-yellow-400" />
+                      Risk Factors
+                    </h3>
+                    <div className="space-y-2">
+                      {riskModal.factors.map((factor, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 text-skinz-accent mt-0.5" />
+                          <p className="text-skinz-text-secondary text-sm">{factor}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                    Risk Factors
-                  </h4>
-                  <ul className="space-y-2">
-                    {riskModal.factors.map((factor, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-1.5"></div>
-                        <span className="text-skinz-text-secondary">{factor}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-green-400" />
+                      Recommendations
+                    </h3>
+                    <div className="space-y-2">
+                      {riskModal.recommendations.map((rec, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-400 mt-0.5" />
+                          <p className="text-skinz-text-secondary text-sm">{rec}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-
-                <div>
-                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    Recommendations
-                  </h4>
-                  <ul className="space-y-2">
-                    {riskModal.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5"></div>
-                        <span className="text-skinz-text-secondary">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <button className="flex-1 px-4 py-2 bg-skinz-accent text-white rounded-lg hover:bg-skinz-accent/80 transition-colors">
-                  Create Action Plan
-                </button>
-                <button className="flex-1 px-4 py-2 bg-skinz-bg-tertiary text-white rounded-lg hover:bg-skinz-bg-tertiary/80 transition-colors">
-                  Schedule Review
-                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -694,4 +475,6 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
       </AnimatePresence>
     </div>
   );
-}
+};
+
+export default VeteranOverviewEnhanced;
