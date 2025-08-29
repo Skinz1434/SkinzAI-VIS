@@ -392,11 +392,11 @@ export function calculateMonthlyCompensation(
   const roundedRating = Math.round(combinedRating / 10) * 10;
   
   // Get base rate
-  let baseRate = COMPENSATION_RATES_2024[roundedRating.toString()] || 0;
+  let baseRate = (COMPENSATION_RATES_2024 as any)[roundedRating.toString()] || 0;
   
   // Add dependent rates (simplified - actual VA rates are more complex)
   if (hasSpouse && roundedRating >= 30) {
-    baseRate = COMPENSATION_RATES_2024[`${roundedRating}_spouse`] || baseRate;
+    baseRate = (COMPENSATION_RATES_2024 as any)[`${roundedRating}_spouse`] || baseRate;
   }
   
   // Add for children (approximately $31-$100 per child depending on rating)
