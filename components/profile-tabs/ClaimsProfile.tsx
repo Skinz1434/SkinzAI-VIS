@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { VeteranProfileEnhanced } from '@/lib/veteran-profile-enhanced';
-import { FileText, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Calendar, ChevronRight, Download, Eye, BarChart3 } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Calendar, ChevronRight, Download, Eye, BarChart3, Plus } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import ClaimsDetailModal from '../ClaimsDetailModal';
+import { generateDetailedClaim } from '@/lib/claims-data';
+import { ClaimDetail } from '@/lib/claims-types';
 
 interface ClaimsProfileProps {
   veteran: VeteranProfileEnhanced;
@@ -11,6 +14,8 @@ interface ClaimsProfileProps {
 
 export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
   const [selectedClaim, setSelectedClaim] = useState<number | null>(null);
+  const [detailedClaim, setDetailedClaim] = useState<ClaimDetail | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Claims status distribution
   const claimsStatusData = [
@@ -51,11 +56,30 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
     <div className="space-y-6">
       {/* Claims Overview */}
       <div className="bg-gradient-to-br from-skinz-bg-secondary to-skinz-bg-tertiary backdrop-blur-md rounded-xl p-6 border border-skinz-border">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-skinz-accent to-skinz-primary rounded-lg flex items-center justify-center">
-            <FileText className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-skinz-accent to-skinz-primary rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-white">Claims Overview</h3>
           </div>
-          <h3 className="text-xl font-semibold text-white">Claims Overview</h3>
+          {/* Test button to ensure modal works */}
+          <button
+            onClick={() => {
+              console.log('Test button clicked');
+              if (veteran.claims && veteran.claims.length > 0) {
+                const testClaim = generateDetailedClaim(veteran.claims[0]);
+                console.log('Test claim generated:', testClaim);
+                setDetailedClaim(testClaim);
+                setIsModalOpen(true);
+              } else {
+                console.log('No claims available');
+              }
+            }}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            type="button">
+            Test Modal (Click Me)
+          </button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -161,19 +185,22 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
             </div>
             <h3 className="text-xl font-semibold text-white">Active Claims</h3>
           </div>
-          <button className="text-skinz-accent hover:text-skinz-primary transition-colors flex items-center gap-1 text-sm">
-            View All <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-1 bg-skinz-accent/20 text-skinz-accent px-3 py-1 rounded-lg hover:bg-skinz-accent/30 transition-colors text-sm">
+              <Plus className="w-4 h-4" />
+              New Claim
+            </button>
+            <button className="text-skinz-accent hover:text-skinz-primary transition-colors flex items-center gap-1 text-sm">
+              View All <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         
         <div className="space-y-3">
-          {veteran.claims.filter(c => c.status !== 'Approved' && c.status !== 'Denied').slice(0, 3).map((claim, index) => (
+          {veteran.claims.filter(c => c.status !== 'Approved' && c.status !== 'Denied').slice(0, 5).map((claim, index) => (
             <div 
               key={index}
-              className={`bg-skinz-bg-tertiary/50 rounded-lg p-4 border cursor-pointer transition-all ${
-                selectedClaim === index ? 'border-skinz-accent' : 'border-skinz-border/50'
-              }`}
-              onClick={() => setSelectedClaim(selectedClaim === index ? null : index)}
+              className="bg-skinz-bg-tertiary/50 rounded-lg p-4 border border-skinz-border/50 hover:border-skinz-accent/50 transition-all"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -211,23 +238,34 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
                 </div>
               </div>
               
-              {selectedClaim === index && (
-                <div className="mt-4 pt-4 border-t border-skinz-border/50">
-                  <p className="text-skinz-text-secondary text-sm mb-2">Last Action</p>
-                  <p className="text-white text-sm">{claim.lastAction}</p>
-                  
-                  <div className="mt-4 flex gap-2">
-                    <button className="flex items-center gap-1 text-xs bg-skinz-accent/20 text-skinz-accent px-3 py-1 rounded hover:bg-skinz-accent/30 transition-colors">
-                      <Eye className="w-3 h-3" />
+              <div className="mt-3 pt-3 border-t border-skinz-border/50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-skinz-text-secondary text-xs">Last Action</p>
+                    <p className="text-white text-sm">{claim.lastAction || 'Pending review'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('View Details clicked for claim:', claim);
+                        const detailed = generateDetailedClaim(claim);
+                        console.log('Generated detailed claim:', detailed);
+                        setDetailedClaim(detailed);
+                        setIsModalOpen(true);
+                      }}
+                      className="flex items-center gap-1 text-sm bg-skinz-accent text-white px-4 py-2 rounded-lg hover:bg-skinz-primary transition-colors font-semibold shadow-lg hover:shadow-xl"
+                      type="button">
+                      <Eye className="w-4 h-4" />
                       View Details
                     </button>
-                    <button className="flex items-center gap-1 text-xs bg-skinz-bg-primary text-skinz-text-secondary px-3 py-1 rounded hover:bg-skinz-bg-tertiary transition-colors">
+                    <button className="flex items-center gap-1 text-xs bg-skinz-bg-primary text-skinz-text-secondary px-3 py-1.5 rounded hover:bg-skinz-bg-tertiary transition-colors">
                       <Download className="w-3 h-3" />
                       Download
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
@@ -277,7 +315,18 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
                   </td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button className="text-skinz-accent hover:text-skinz-primary transition-colors">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Table View clicked for claim:', claim);
+                          const detailed = generateDetailedClaim(claim);
+                          setDetailedClaim(detailed);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-2 bg-skinz-accent/20 text-skinz-accent hover:bg-skinz-accent hover:text-white rounded transition-colors"
+                        type="button"
+                        title="View Claim Details">
                         <Eye className="w-4 h-4" />
                       </button>
                       <button className="text-skinz-text-secondary hover:text-white transition-colors">
@@ -350,6 +399,18 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
             ))}
           </div>
         </div>
+      )}
+      
+      {/* Claims Detail Modal */}
+      {detailedClaim && (
+        <ClaimsDetailModal
+          claim={detailedClaim}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setDetailedClaim(null);
+          }}
+        />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { Veteran, Claim, Branch, DischargeStatus, ClaimType, ClaimStatus } from '@/types';
+import { getRankForBranch } from './military-data';
 
 // Generate realistic mock veteran data
 export function generateMockVeterans(count: number = 100): Veteran[] {
@@ -12,6 +13,31 @@ export function generateMockVeterans(count: number = 100): Veteran[] {
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const serviceStartYear = 1970 + Math.floor(Math.random() * 40);
     const serviceYears = 2 + Math.floor(Math.random() * 20);
+    const branch = Object.values(Branch)[Math.floor(Math.random() * Object.values(Branch).length)];
+    
+    // More realistic discharge distribution - 85% honorable, 10% general, 5% other
+    const dischargeRandom = Math.random();
+    let dischargeStatus: DischargeStatus;
+    let eligibleForBenefits = true;
+    
+    if (dischargeRandom < 0.85) {
+      dischargeStatus = DischargeStatus.HONORABLE;
+    } else if (dischargeRandom < 0.95) {
+      dischargeStatus = DischargeStatus.GENERAL;
+    } else if (dischargeRandom < 0.97) {
+      dischargeStatus = DischargeStatus.OTHER_THAN_HONORABLE;
+      eligibleForBenefits = false;
+    } else if (dischargeRandom < 0.99) {
+      dischargeStatus = DischargeStatus.BAD_CONDUCT;
+      eligibleForBenefits = false;
+    } else {
+      dischargeStatus = DischargeStatus.DISHONORABLE;
+      eligibleForBenefits = false;
+    }
+    
+    // Only veterans with eligible discharge status get claims and disability ratings
+    const claimCount = eligibleForBenefits ? Math.floor(Math.random() * 3) + 2 : 0; // 2-4 claims for eligible, 0 for ineligible
+    const disabilityRating = eligibleForBenefits ? Math.floor(Math.random() * 101) : 0;
     
     veterans.push({
       id: `vet-${i + 1}`,
@@ -20,14 +46,14 @@ export function generateMockVeterans(count: number = 100): Veteran[] {
       ssn: `${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}-${Math.floor(Math.random() * 9000) + 1000}`,
       dateOfBirth: new Date(1950 + Math.floor(Math.random() * 50), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28)),
       serviceNumber: `SN${Math.floor(Math.random() * 9000000) + 1000000}`,
-      branch: Object.values(Branch)[Math.floor(Math.random() * Object.values(Branch).length)],
+      branch,
       serviceStartDate: new Date(serviceStartYear, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28)),
       serviceEndDate: new Date(serviceStartYear + serviceYears, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28)),
-      dischargeStatus: Object.values(DischargeStatus)[Math.floor(Math.random() * Object.values(DischargeStatus).length)],
-      disabilityRating: Math.floor(Math.random() * 101),
-      claims: generateMockClaims(Math.floor(Math.random() * 5)),
+      dischargeStatus,
+      disabilityRating,
+      claims: generateMockClaims(claimCount),
       documents: [],
-      vadirSyncStatus: {
+      vetProfileSyncStatus: {
         status: Math.random() > 0.03 ? 'success' : 'fallback',
         lastSync: new Date(Date.now() - Math.floor(Math.random() * 86400000)),
         accuracy: 95 + Math.random() * 5,
@@ -47,6 +73,14 @@ export function generateMockVeterans(count: number = 100): Veteran[] {
 
 function generateMockClaims(count: number): Claim[] {
   const claims: Claim[] = [];
+  const lastActions = [
+    'Evidence requested from veteran',
+    'C&P exam scheduled',
+    'Medical records under review',
+    'Rating decision in progress',
+    'Additional information needed',
+    'Claim moved to review phase'
+  ];
   
   for (let i = 0; i < count; i++) {
     claims.push({
@@ -57,7 +91,9 @@ function generateMockClaims(count: number): Claim[] {
       status: Object.values(ClaimStatus)[Math.floor(Math.random() * Object.values(ClaimStatus).length)],
       filingDate: new Date(Date.now() - Math.floor(Math.random() * 31536000000)),
       lastActionDate: new Date(Date.now() - Math.floor(Math.random() * 2592000000)),
+      lastAction: lastActions[Math.floor(Math.random() * lastActions.length)],
       estimatedCompletionDate: new Date(Date.now() + Math.floor(Math.random() * 7776000000)),
+      estimatedCompletion: new Date(Date.now() + Math.floor(Math.random() * 7776000000)),
       rating: Math.random() > 0.5 ? Math.floor(Math.random() * 101) : null,
       description: 'Service-connected disability claim for evaluation',
       evidence: [],
@@ -95,7 +131,7 @@ export async function mockFetchVeterans(page: number = 1, limit: number = 20, fi
   }
   
   if (filters?.syncStatus) {
-    filtered = filtered.filter(v => v.vadirSyncStatus.status === filters.syncStatus);
+    filtered = filtered.filter(v => v.vetProfileSyncStatus.status === filters.syncStatus);
   }
   
   // Paginate
@@ -112,7 +148,7 @@ export async function mockFetchVeterans(page: number = 1, limit: number = 20, fi
   };
 }
 
-export async function mockSyncVadir(veteranId: string) {
+export async function mockSyncVetProfile(veteranId: string) {
   await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
   
   const success = Math.random() > 0.05; // 95% success rate
@@ -124,7 +160,7 @@ export async function mockSyncVadir(veteranId: string) {
     dataUpdated: success,
     fallbackUsed: !success,
     syncDate: new Date(),
-    errors: success ? [] : ['Vadir API timeout - falling back to DD-214']
+    errors: success ? [] : ['Vet Profile API timeout - falling back to DD-214']
   };
 }
 

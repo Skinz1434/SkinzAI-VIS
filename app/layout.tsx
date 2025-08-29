@@ -9,10 +9,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VIS Service Verifier",
-  description: "Veteran Information System - Service Verification Portal with 97% Vadir Accuracy",
-  keywords: "veteran, VA, claims, service verification, Vadir, DD-214",
-  authors: [{ name: "VIS Team" }],
+  title: "Skinz' Better VIS - Service Verification Suite",
+  description: "Enhanced Veteran Information System - Advanced Service Verification Suite with Real-Time Analytics & TERA Analysis",
+  keywords: "veteran, VA, claims, service verification, Vet Profile, DD-214, PACT Act, toxic exposure, disability rating",
+  authors: [{ name: "Skinz AI" }],
+  openGraph: {
+    title: "Skinz' Better VIS",
+    description: "Advanced Service Verification Suite",
+    type: "website",
+  },
 };
 
 export const viewport = {

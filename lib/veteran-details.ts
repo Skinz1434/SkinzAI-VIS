@@ -167,8 +167,8 @@ export interface VeteranDetails {
     category: 'Service' | 'Medical' | 'Benefits' | 'Claims' | 'Other';
   }>;
 
-  // Vadir Sync Status
-  vadirStatus: {
+  // Vet Profile Sync Status
+  vetProfileStatus: {
     lastSync: Date;
     accuracy: number;
     status: 'Success' | 'Partial' | 'Failed';
@@ -189,12 +189,63 @@ export interface VeteranDetails {
 export function generateVeteranDetails(basicInfo: any): VeteranDetails {
   const states = ['CA', 'TX', 'FL', 'NY', 'PA', 'OH', 'IL', 'GA', 'NC', 'MI'];
   const cities = ['Los Angeles', 'Houston', 'Miami', 'New York', 'Philadelphia', 'Columbus', 'Chicago', 'Atlanta', 'Charlotte', 'Detroit'];
-  const operations = ['Iraqi Freedom', 'Enduring Freedom', 'Desert Storm', 'Desert Shield', 'Noble Eagle'];
-  const ranks = ['Private', 'Specialist', 'Sergeant', 'Staff Sergeant', 'Lieutenant', 'Captain', 'Major', 'Colonel'];
   
-  const serviceStart = basicInfo.serviceStartDate || new Date(1990 + Math.floor(Math.random() * 20), 0, 1);
-  const serviceEnd = basicInfo.serviceEndDate || new Date(2010 + Math.floor(Math.random() * 10), 0, 1);
+  // Import proper rank data and realistic generators
+  const { getRankForBranch } = require('./military-data');
+  const { 
+    generateDeployments, 
+    generateMedicalConditions, 
+    calculateCombinedRating,
+    calculateMonthlyCompensation,
+    generateFinancialData,
+    SERVICE_ERAS,
+    MOS_EXPOSURES
+  } = require('./veteran-data-generator');
+  
+  const rankData = getRankForBranch(basicInfo.branch, Math.random() > 0.8); // 20% chance of officer
+  
+  // Determine service era based on age
+  const age = new Date().getFullYear() - new Date(basicInfo.dateOfBirth).getFullYear();
+  let serviceStart, serviceEnd;
+  
+  if (age > 65) {
+    // Vietnam era veteran
+    serviceStart = new Date(1965 + Math.floor(Math.random() * 8), 0, 1);
+    serviceEnd = new Date(serviceStart.getFullYear() + 2 + Math.floor(Math.random() * 4), 0, 1);
+  } else if (age > 50) {
+    // Gulf War era
+    serviceStart = new Date(1985 + Math.floor(Math.random() * 10), 0, 1);
+    serviceEnd = new Date(serviceStart.getFullYear() + 4 + Math.floor(Math.random() * 6), 0, 1);
+  } else {
+    // Post-9/11 era
+    serviceStart = new Date(2001 + Math.floor(Math.random() * 15), 0, 1);
+    serviceEnd = new Date(serviceStart.getFullYear() + 4 + Math.floor(Math.random() * 8), 0, 1);
+  }
+  
   const serviceYears = serviceEnd.getFullYear() - serviceStart.getFullYear();
+  
+  // Generate deployments first to use in medical conditions
+  const deployments = generateDeployments(basicInfo.branch, serviceStart, serviceEnd);
+  
+  // Get primary MOS for medical condition generation
+  const serviceEra = SERVICE_ERAS.find(era => 
+    serviceStart.getFullYear() >= era.startYear && serviceStart.getFullYear() <= era.endYear
+  ) || SERVICE_ERAS[2];
+  const primaryMOS = serviceEra.commonMOS[Math.floor(Math.random() * serviceEra.commonMOS.length)];
+  
+  // Generate realistic medical conditions based on service history
+  const medicalConditions = generateMedicalConditions(deployments, primaryMOS, age);
+  
+  // Calculate realistic combined disability rating
+  const individualRatings = medicalConditions
+    .filter(condition => condition.serviceConnected)
+    .map(condition => condition.rating);
+  const combinedRating = calculateCombinedRating(individualRatings);
+  
+  // Generate realistic financial data
+  const hasSpouse = ['Married', 'Widowed'].includes(['Single', 'Married', 'Divorced', 'Widowed'][Math.floor(Math.random() * 4)]);
+  const numChildren = hasSpouse ? Math.floor(Math.random() * 3) : 0;
+  const financialData = generateFinancialData(combinedRating, hasSpouse, numChildren, age);
 
   return {
     id: basicInfo.id,
@@ -226,24 +277,14 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
       dodId: `${Math.floor(Math.random() * 9000000000) + 1000000000}`,
       branch: basicInfo.branch,
       component: ['Active', 'Reserve', 'Guard'][Math.floor(Math.random() * 3)] as any,
-      rank: ranks[Math.floor(Math.random() * ranks.length)],
-      payGrade: `E-${Math.floor(Math.random() * 9) + 1}`,
+      rank: rankData.rank,
+      payGrade: rankData.payGrade,
       serviceStartDate: serviceStart,
       serviceEndDate: serviceEnd,
       totalServiceYears: serviceYears,
       totalServiceMonths: serviceYears * 12 + Math.floor(Math.random() * 12),
       
-      deployments: Array.from({ length: Math.floor(Math.random() * 3) + 2 }, (_, i) => {
-        const deployStart = new Date(2001 + i * 2, Math.floor(Math.random() * 12), 1);
-        const deployEnd = new Date(deployStart.getFullYear() + 1, Math.floor(Math.random() * 12), 1);
-        return {
-          location: ['Iraq - Baghdad', 'Afghanistan - Kandahar', 'Kuwait - Camp Arifjan', 'Germany - Ramstein', 'Japan - Okinawa', 'Syria - Al-Tanf', 'Qatar - Al Udeid'][Math.floor(Math.random() * 7)],
-          startDate: deployStart,
-          endDate: deployEnd,
-          operation: operations[Math.floor(Math.random() * operations.length)],
-          awards: ['Bronze Star Medal', 'Purple Heart', 'Army Commendation Medal', 'Combat Infantryman Badge', 'Army Achievement Medal', 'Meritorious Service Medal'].filter(() => Math.random() > 0.6)
-        };
-      }),
+      deployments: deployments,
       
       units: Array.from({ length: Math.floor(Math.random() * 3) + 2 }, (_, i) => {
         const unitStart = new Date(serviceStart.getFullYear() + i * 3, Math.floor(Math.random() * 12), 1);
@@ -271,26 +312,26 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
         civilianEducation: ['High School Diploma', 'Associate Degree - Criminal Justice', 'Bachelor Degree - Business Administration', 'Master Degree - Public Administration'][Math.floor(Math.random() * 4)]
       },
       
-      specialties: Array.from({ length: Math.floor(Math.random() * 3) + 2 }, () => ({
-        code: `${Math.floor(Math.random() * 90) + 10}${['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)]}`,
-        title: ['Infantry Operations', 'Signal Communications', 'Military Intelligence', 'Combat Logistics', 'Medical Specialist', 'Combat Engineer'][Math.floor(Math.random() * 6)],
-        dateAchieved: new Date(2000 + Math.floor(Math.random() * 15), Math.floor(Math.random() * 12), 1),
-        status: Math.random() > 0.3 ? 'Active' : 'Inactive' as any
-      }))
+      specialties: [{
+        code: primaryMOS.split(' ')[0],
+        title: primaryMOS,
+        dateAchieved: new Date(serviceStart.getFullYear(), Math.floor(Math.random() * 12), 1),
+        status: 'Active' as any
+      }]
     },
 
     mpd: {
-      disabilityRating: basicInfo.disabilityRating || Math.floor(Math.random() * 101),
+      disabilityRating: combinedRating,
       effectiveDate: new Date(2020, Math.floor(Math.random() * 12), 1),
       
-      conditions: Array.from({ length: Math.floor(Math.random() * 5) + 1 }, () => ({
-        code: `M${Math.floor(Math.random() * 90) + 10}.${Math.floor(Math.random() * 900) + 100}`,
-        description: ['PTSD', 'Tinnitus', 'Knee Strain', 'Lower Back Pain', 'Hearing Loss'][Math.floor(Math.random() * 5)],
-        rating: Math.floor(Math.random() * 70) + 10,
-        serviceConnected: Math.random() > 0.2,
-        dateDiagnosed: new Date(2015 + Math.floor(Math.random() * 5), Math.floor(Math.random() * 12), 1),
-        status: ['Active', 'Resolved', 'Chronic'][Math.floor(Math.random() * 3)] as any,
-        treatment: ['Physical Therapy', 'Medication', 'Surgery', 'Observation'][Math.floor(Math.random() * 4)]
+      conditions: medicalConditions.map(condition => ({
+        code: condition.icd10,
+        description: condition.name,
+        rating: condition.rating,
+        serviceConnected: condition.serviceConnected,
+        dateDiagnosed: condition.diagnosedDate,
+        status: (['Mild', 'Moderate'].includes(condition.severity) ? 'Active' : 'Chronic') as any,
+        treatment: condition.treatment
       })),
       
       medications: Array.from({ length: Math.floor(Math.random() * 4) + 1 }, () => ({
@@ -321,15 +362,15 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
     },
 
     benefits: {
-      compensationType: ['Disability', 'Pension', 'Special Monthly'][Math.floor(Math.random() * 3)] as any,
-      monthlyAmount: Math.floor(Math.random() * 3000) + 1000,
-      dependents: Math.floor(Math.random() * 4),
+      compensationType: combinedRating > 0 ? 'Disability' as any : 'None' as any,
+      monthlyAmount: financialData.monthlyIncome.vaCompensation,
+      dependents: numChildren + (hasSpouse ? 1 : 0),
       
       education: {
-        giBlllRemaining: Math.floor(Math.random() * 36),
-        giBlllUsed: Math.floor(Math.random() * 12),
-        degreeProgram: Math.random() > 0.5 ? 'Computer Science' : undefined,
-        school: Math.random() > 0.5 ? 'State University' : undefined
+        giBlllRemaining: serviceYears >= 3 ? Math.floor(Math.random() * 36) : Math.floor(serviceYears * 12),
+        giBlllUsed: serviceYears >= 3 ? Math.floor(Math.random() * 12) : 0,
+        degreeProgram: age < 50 && Math.random() > 0.5 ? ['Computer Science', 'Business Administration', 'Criminal Justice', 'Engineering'][Math.floor(Math.random() * 4)] : undefined,
+        school: age < 50 && Math.random() > 0.5 ? ['State University', 'Community College', 'Technical Institute'][Math.floor(Math.random() * 3)] : undefined
       },
       
       healthcare: {
@@ -451,7 +492,7 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
       }))
     ],
 
-    vadirStatus: {
+    vetProfileStatus: {
       lastSync: basicInfo.lastSyncDate || new Date(),
       accuracy: basicInfo.accuracy || (96 + Math.random() * 3),
       status: basicInfo.accuracy > 95 ? 'Success' : 'Partial' as any,
@@ -464,7 +505,7 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
         benefitsData: Math.random() > 0.1
       },
       discrepancies: Math.random() > 0.8 ? ['Service end date mismatch', 'Disability rating pending update'] : [],
-      fallbackUsed: basicInfo.vadirSyncStatus?.fallbackToDD214 || false
+      fallbackUsed: basicInfo.vetProfileSyncStatus?.fallbackToDD214 || false
     }
   };
 }

@@ -4,11 +4,12 @@ import { generateVeteranDetails } from '@/lib/veteran-details';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // In production, this would query a database
+  const resolvedParams = await params;
   const veterans = await generateMockVeterans(500);
-  const veteran = veterans.find(v => v.id === params.id);
+  const veteran = veterans.find(v => v.id === resolvedParams.id);
   
   if (!veteran) {
     return NextResponse.json(
@@ -25,13 +26,14 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params;
   const body = await request.json();
-  
+
   // In production, this would update the database
   return NextResponse.json({
-    id: params.id,
+    id: resolvedParams.id,
     ...body,
     updatedAt: new Date().toISOString()
   });

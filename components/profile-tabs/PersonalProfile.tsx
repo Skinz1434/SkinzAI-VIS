@@ -187,7 +187,7 @@ export default function PersonalProfile({ veteran }: PersonalProfileProps) {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <p className="text-white font-medium">{plan.provider}</p>
-                    <p className="text-skinz-text-secondary text-sm">{plan.planType}</strong>
+                    <p className="text-skinz-text-secondary text-sm">{plan.planType}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded ${
                     plan.status === 'Active' 

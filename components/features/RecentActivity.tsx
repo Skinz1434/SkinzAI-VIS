@@ -25,7 +25,7 @@ const activityIcons: Record<ActivityTypeEnum, any> = {
   CLAIM_APPROVED: CheckCircle,
   CLAIM_DENIED: XCircle,
   DOCUMENT_UPLOADED: Upload,
-  VADIR_SYNC: RefreshCw,
+  VET_PROFILE_SYNC: RefreshCw,
   DD214_FALLBACK: FileSearch,
   USER_LOGIN: LogIn,
   REPORT_GENERATED: FileText
@@ -39,7 +39,7 @@ const activityColors: Record<ActivityTypeEnum, string> = {
   CLAIM_APPROVED: 'text-emerald-400',
   CLAIM_DENIED: 'text-red-400',
   DOCUMENT_UPLOADED: 'text-indigo-400',
-  VADIR_SYNC: 'text-cyan-400',
+  VET_PROFILE_SYNC: 'text-cyan-400',
   DD214_FALLBACK: 'text-orange-400',
   USER_LOGIN: 'text-gray-400',
   REPORT_GENERATED: 'text-pink-400'
@@ -49,8 +49,8 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   const defaultActivities: ActivityType[] = activities.length > 0 ? activities : [
     {
       id: '1',
-      type: ActivityTypeEnum.VADIR_SYNC,
-      description: 'Vadir API sync completed with 97.8% accuracy',
+      type: ActivityTypeEnum.VET_PROFILE_SYNC,
+      description: 'Vet Profile API sync completed with 97.8% accuracy',
       timestamp: new Date(Date.now() - 1000 * 60 * 5),
       userId: 'system',
       veteranId: null,
@@ -77,7 +77,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
     {
       id: '4',
       type: ActivityTypeEnum.DD214_FALLBACK,
-      description: 'Fallback to DD-214 processing due to Vadir timeout',
+      description: 'Fallback to DD-214 processing due to Vet Profile timeout',
       timestamp: new Date(Date.now() - 1000 * 60 * 45),
       userId: 'system',
       veteranId: 'vet-125',
@@ -126,7 +126,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                 {formatTime(activity.timestamp)}
               </p>
             </div>
-            {activity.type === ActivityTypeEnum.VADIR_SYNC && activity.metadata?.accuracy && (
+            {activity.type === ActivityTypeEnum.VET_PROFILE_SYNC && activity.metadata?.accuracy && (
               <span className="accuracy-badge text-xs">
                 {activity.metadata.accuracy}%
               </span>

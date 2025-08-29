@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   }
   
   if (filter !== 'all') {
-    filteredVeterans = filteredVeterans.filter(v => v.vadirSyncStatus.status === filter);
+    filteredVeterans = filteredVeterans.filter(v => v.vetProfileSyncStatus.status === filter);
   }
   
   // Paginate

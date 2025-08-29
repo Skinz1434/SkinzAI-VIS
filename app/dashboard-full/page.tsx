@@ -26,10 +26,13 @@ import {
   Grid,
   List
 } from 'lucide-react';
-import { mockFetchVeterans, mockSyncVadir, mockProcessClaim, mockExportData } from '@/lib/mock-data';
+import { mockFetchVeterans, mockSyncVetProfile, mockProcessClaim, mockExportData } from '@/lib/mock-data';
 import { Veteran, Branch, DischargeStatus, ClaimStatus } from '@/types';
-import { VeteranDetailModal } from '@/components/VeteranDetailModal';
-import { generateVeteranDetails, VeteranDetails } from '@/lib/veteran-details';
+import { VeteranDetailModalEnhanced } from '@/components/VeteranDetailModalEnhanced';
+import { generateVeteranDetails } from '@/lib/veteran-details';
+import { generateVeteranProfileEnhanced, VeteranProfileEnhanced } from '@/lib/veteran-profile-enhanced';
+import OverviewEnhanced from '@/components/tabs/OverviewEnhanced';
+import ClaimsEnhanced from '@/components/tabs/ClaimsEnhanced';
 
 type TabType = 'overview' | 'veterans' | 'claims' | 'sync' | 'reports';
 
@@ -37,7 +40,7 @@ export default function DashboardFullPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [veterans, setVeterans] = useState<Veteran[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedVeteran, setSelectedVeteran] = useState<VeteranDetails | null>(null);
+  const [selectedVeteran, setSelectedVeteran] = useState<VeteranProfileEnhanced | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -49,7 +52,7 @@ export default function DashboardFullPage() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
-  const [vadirAccuracy, setVadirAccuracy] = useState(97.3);
+  const [vetProfileAccuracy, setVetProfileAccuracy] = useState(97.3);
 
   // Load veterans data
   const loadVeterans = useCallback(async () => {
@@ -75,21 +78,22 @@ export default function DashboardFullPage() {
   // Update accuracy periodically
   useEffect(() => {
     const interval = setInterval(() => {
-      setVadirAccuracy(96.5 + Math.random() * 2);
+      setVetProfileAccuracy(96.5 + Math.random() * 2);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
   const handleVeteranClick = (veteran: Veteran) => {
     const detailedVeteran = generateVeteranDetails(veteran);
-    setSelectedVeteran(detailedVeteran);
+    const enhancedVeteran = generateVeteranProfileEnhanced(detailedVeteran);
+    setSelectedVeteran(enhancedVeteran);
     setIsModalOpen(true);
   };
 
   const handleSync = async (veteranId: string) => {
     setSyncingIds(prev => new Set(prev).add(veteranId));
     try {
-      const result = await mockSyncVadir(veteranId);
+      const result = await mockSyncVetProfile(veteranId);
       if (result.success) {
         setVeterans(prev => prev.map(v => 
           v.id === veteranId 
@@ -100,8 +104,8 @@ export default function DashboardFullPage() {
         if (selectedVeteran && selectedVeteran.id === veteranId) {
           setSelectedVeteran(prev => prev ? {
             ...prev,
-            vadirStatus: {
-              ...prev.vadirStatus,
+            vetProfileStatus: {
+              ...prev.vetProfileStatus,
               accuracy: result.accuracy,
               lastSync: result.syncDate,
               status: result.success ? 'Success' : 'Failed'
@@ -133,7 +137,7 @@ export default function DashboardFullPage() {
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'veterans', label: 'Veterans', icon: Users },
     { id: 'claims', label: 'Claims', icon: FileText },
-    { id: 'sync', label: 'Vadir Sync', icon: RefreshCw },
+    { id: 'sync', label: 'Vet Profile Sync', icon: RefreshCw },
     { id: 'reports', label: 'Reports', icon: FileDown }
   ];
 
@@ -141,7 +145,7 @@ export default function DashboardFullPage() {
     <>
       {/* Veteran Detail Modal */}
       {selectedVeteran && (
-        <VeteranDetailModal
+        <VeteranDetailModalEnhanced
           veteran={selectedVeteran}
           isOpen={isModalOpen}
           onClose={() => {
@@ -159,13 +163,26 @@ export default function DashboardFullPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Shield className="w-8 h-8 text-blue-400 mr-3" />
-              <h1 className="text-xl font-bold text-white">VIS Service Verifier</h1>
+              <div className="relative mr-4 group">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                <Shield className="relative w-10 h-10 text-cyan-400 animate-pulse drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-lg blur-sm opacity-25"></div>
+                <div className="relative">
+                  <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
+                    Skinz' Better VIS
+                  </h1>
+                  <p className="text-xs text-gray-400 font-semibold tracking-wider uppercase">Service Verification Suite v2.0</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-xs text-gray-400">Vadir Accuracy</p>
-                <p className="text-lg font-bold text-green-400">{vadirAccuracy.toFixed(1)}%</p>
+                <p className="text-xs text-gray-400">Vet Profile Accuracy</p>
+                <p className="text-lg font-bold text-green-400">{vetProfileAccuracy.toFixed(1)}%</p>
               </div>
               <button className="p-2 text-gray-400 hover:text-white">
                 <RefreshCw className="w-5 h-5" />
@@ -203,7 +220,7 @@ export default function DashboardFullPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
-          <OverviewTab accuracy={vadirAccuracy} veteranCount={totalRecords} />
+          <OverviewEnhanced accuracy={vetProfileAccuracy} veteranCount={totalRecords} veterans={veterans} />
         )}
 
         {activeTab === 'veterans' && (
@@ -226,7 +243,7 @@ export default function DashboardFullPage() {
           />
         )}
 
-        {activeTab === 'claims' && <ClaimsTab veterans={veterans} />}
+        {activeTab === 'claims' && <ClaimsEnhanced veterans={veterans} />}
         
         {activeTab === 'sync' && (
           <SyncTab 
@@ -250,7 +267,7 @@ function OverviewTab({ accuracy, veteranCount }: { accuracy: number; veteranCoun
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
-          title="Vadir Accuracy"
+          title="Vet Profile Accuracy"
           value={`${accuracy.toFixed(1)}%`}
           subtitle="Above 97% threshold"
           color="green"
@@ -281,7 +298,7 @@ function OverviewTab({ accuracy, veteranCount }: { accuracy: number; veteranCoun
         <div className="space-y-3">
           <ActivityItem
             icon={CheckCircle}
-            text="Vadir sync completed for 50 veterans"
+            text="Vet Profile sync completed for 50 veterans"
             time="2 minutes ago"
             color="green"
           />
@@ -512,12 +529,12 @@ function ClaimsTab({ veterans }: any) {
 function SyncTab({ veterans, onSync, syncingIds }: any) {
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-white">Vadir Synchronization</h2>
+      <h2 className="text-2xl font-bold text-white">Vet Profile Synchronization</h2>
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-lg font-semibold text-white">Bulk Sync Operations</p>
-            <p className="text-gray-400">Synchronize veteran data with Vadir API</p>
+            <p className="text-gray-400">Synchronize veteran data with Vet Profile API</p>
           </div>
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             Sync All

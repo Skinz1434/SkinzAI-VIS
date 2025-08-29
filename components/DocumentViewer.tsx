@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Download, Print, Share2, ZoomIn, ZoomOut, RotateCw, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Download, Printer, Share2, ZoomIn, ZoomOut, RotateCw, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DocumentViewerProps {
   document: {
@@ -83,7 +83,7 @@ export default function DocumentViewer({ document, isOpen, onClose }: DocumentVi
               className="p-2 bg-skinz-bg-secondary rounded-lg hover:bg-skinz-bg-primary transition-colors"
               title="Print"
             >
-              <Print className="w-4 h-4 text-skinz-text-secondary" />
+              <Printer className="w-4 h-4 text-skinz-text-secondary" />
             </button>
             <button
               className="p-2 bg-skinz-bg-secondary rounded-lg hover:bg-skinz-bg-primary transition-colors"

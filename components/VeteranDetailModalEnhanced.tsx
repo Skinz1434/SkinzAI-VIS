@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import { 
-  X, User, Phone, Mail, MapPin, Shield, Award, Heart, 
+  X, XCircle, User, Phone, Mail, MapPin, Shield, Award, Heart, 
   FileText, Calendar, Download, ChevronRight, CheckCircle,
   AlertCircle, Clock, DollarSign, Home, GraduationCap,
   Stethoscope, Pill, Activity, FolderOpen, RefreshCw,
   AlertTriangle, TrendingUp, Users, Star, BarChart3,
   MessageSquare, Bell, CreditCard, Scale, Briefcase,
   Globe, History, Lock, Settings, ChevronDown, ChevronUp,
-  Info, Zap, Target, Brain, LineChart, PieChart,
+  Info, Zap, Target, Brain, LineChart as LineChartIcon, PieChart as PieChartIcon,
   FileCheck, UserCheck, Building, Truck, Map, Flag,
   Award as AwardIcon, Medal, Ribbon, Trophy
 } from 'lucide-react';
@@ -31,6 +31,7 @@ import DocumentsProfile from './profile-tabs/DocumentsProfile';
 import FinancialProfile from './profile-tabs/FinancialProfile';
 import LegalProfile from './profile-tabs/LegalProfile';
 import AuditHistory from './profile-tabs/AuditHistory';
+import AnalyticsInsightsEnhanced from './profile-tabs/AnalyticsInsightsEnhanced';
 
 interface VeteranDetailModalEnhancedProps {
   veteran: VeteranProfileEnhanced;
@@ -130,7 +131,7 @@ export function VeteranDetailModalEnhanced({
                     className="px-3 py-1 bg-green-500/30 hover:bg-green-500/40 rounded text-white text-sm flex items-center gap-1"
                   >
                     <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} /> 
-                    Sync MPD/Vadir
+                    Sync MPD/Vet Profile
                   </button>
                   <button className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-white text-sm flex items-center gap-1">
                     <MessageSquare className="w-3 h-3" /> Contact
@@ -166,7 +167,7 @@ export function VeteranDetailModalEnhanced({
             />
             <MetricBadge 
               label="MPD Accuracy" 
-              value={`${veteran.vadirStatus.accuracy.toFixed(1)}%`} 
+              value={`${veteran.vetProfileStatus.accuracy.toFixed(1)}%`} 
               color="cyan" 
             />
             <MetricBadge 
@@ -181,7 +182,7 @@ export function VeteranDetailModalEnhanced({
             />
             <MetricBadge 
               label="Data Quality" 
-              value={`${veteran.qualityMetrics.dataCompleteness.toFixed(0)}%`} 
+              value={`${veteran.profileServices.qualityMetrics.dataCompleteness.toFixed(0)}%`} 
               color="indigo" 
             />
             <MetricBadge 
@@ -259,7 +260,7 @@ export function VeteranDetailModalEnhanced({
                 {activeProfileTab === 'legal' && <LegalProfile veteran={veteran} />}
               </>
             )}
-            {activeMainTab === 'analytics' && <AnalyticsDashboard veteran={veteran} />}
+            {activeMainTab === 'analytics' && <AnalyticsInsightsEnhanced veteran={veteran} />}
             {activeMainTab === 'communications' && <CommunicationsCenter veteran={veteran} />}
             {activeMainTab === 'audit' && <AuditHistory veteran={veteran} />}
           </div>
@@ -269,10 +270,10 @@ export function VeteranDetailModalEnhanced({
         <div className="bg-gray-700 px-6 py-3 flex justify-between items-center border-t border-gray-600">
           <div className="flex items-center gap-4">
             <span className="text-xs text-gray-400">
-              Last Updated: {new Date(veteran.vadirStatus.lastSync).toLocaleString()}
+              Last Updated: {new Date(veteran.vetProfileStatus.lastSync).toLocaleString()}
             </span>
             <span className="text-xs text-gray-400">
-              Data Quality: {veteran.qualityMetrics.dataCompleteness.toFixed(0)}%
+              Data Quality: {veteran.profileServices.qualityMetrics.dataCompleteness.toFixed(0)}%
             </span>
           </div>
           <div className="flex gap-2">
@@ -372,7 +373,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
             />
             <InsightBar 
               label="Rating Increase" 
-              probability={veteran.analytics.predictions.ratingIncreaselikelihood} 
+              probability={veteran.analytics.predictions.ratingIncreaseLikelihood} 
               color="green"
             />
             <InsightBar 
@@ -394,7 +395,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
           System Integrations
         </h3>
         <div className="grid grid-cols-4 gap-4">
-          {Object.entries(veteran.integrations).map(([system, data]) => (
+          {Object.entries(veteran.profileServices.integrations).map(([system, data]) => (
             <div key={system} className="bg-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-white font-medium capitalize">
@@ -426,7 +427,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
           Recent Activity
         </h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
-          {veteran.auditTrail.slice(0, 10).map((event, index) => (
+          {veteran.profileServices.auditTrail.slice(0, 10).map((event, index) => (
             <div key={index} className="flex items-start gap-3 p-3 bg-gray-700 rounded-lg">
               <div className={`p-2 rounded-lg ${
                 event.result === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
@@ -447,124 +448,7 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
   );
 }
 
-// Analytics Dashboard Component
-function AnalyticsDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
-  return (
-    <div className="space-y-6">
-      {/* Comparative Analysis */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-4">Comparative Analysis</h3>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <h4 className="text-white font-medium mb-3">vs National Average</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={[
-                { category: 'Rating', value: veteran.analytics.comparisons.vsNationalAverage.rating, fill: veteran.analytics.comparisons.vsNationalAverage.rating > 0 ? '#10b981' : '#ef4444' },
-                { category: 'Benefits', value: veteran.analytics.comparisons.vsNationalAverage.benefits, fill: veteran.analytics.comparisons.vsNationalAverage.benefits > 0 ? '#10b981' : '#ef4444' },
-                { category: 'Healthcare', value: veteran.analytics.comparisons.vsNationalAverage.healthcare, fill: veteran.analytics.comparisons.vsNationalAverage.healthcare > 0 ? '#10b981' : '#ef4444' }
-              ]}>
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="bg-gray-700 rounded-lg p-4">
-            <h4 className="text-white font-medium mb-3">vs Peer Group</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <RadarChart data={[
-                { subject: 'Rating', A: 50 + veteran.analytics.comparisons.vsPeerGroup.rating, fullMark: 100 },
-                { subject: 'Benefits', A: 50 + veteran.analytics.comparisons.vsPeerGroup.benefits, fullMark: 100 },
-                { subject: 'Healthcare', A: 50 + veteran.analytics.comparisons.vsPeerGroup.healthcare, fullMark: 100 },
-                { subject: 'Engagement', A: veteran.analytics.engagement.benefitUtilization, fullMark: 100 },
-                { subject: 'Compliance', A: veteran.analytics.engagement.medicationAdherence, fullMark: 100 }
-              ]}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="subject" />
-                <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                <Radar name="Performance" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Trend Analysis */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-4">Historical Trends</h3>
-        <div className="bg-gray-700 rounded-lg p-4">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="date" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Line 
-                yAxisId="left"
-                type="monotone" 
-                dataKey="rating" 
-                data={veteran.analytics.trends.ratingHistory}
-                stroke="#3b82f6" 
-                name="Disability Rating %"
-              />
-              <Line 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="amount" 
-                data={veteran.analytics.trends.benefitHistory}
-                stroke="#10b981" 
-                name="Monthly Benefits $"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Engagement Metrics */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-4">Engagement & Compliance</h3>
-        <div className="grid grid-cols-5 gap-4">
-          <EngagementCard 
-            title="Portal Usage" 
-            value={`${veteran.analytics.engagement.portalUsageMinutes} min`}
-            subtitle="Last 30 days"
-            icon={<Globe className="w-5 h-5" />}
-          />
-          <EngagementCard 
-            title="Appointment Rate" 
-            value={`${veteran.analytics.engagement.appointmentShowRate.toFixed(0)}%`}
-            subtitle="Show rate"
-            icon={<Calendar className="w-5 h-5" />}
-          />
-          <EngagementCard 
-            title="Medication" 
-            value={`${veteran.analytics.engagement.medicationAdherence.toFixed(0)}%`}
-            subtitle="Adherence"
-            icon={<Pill className="w-5 h-5" />}
-          />
-          <EngagementCard 
-            title="Benefits" 
-            value={`${veteran.analytics.engagement.benefitUtilization.toFixed(0)}%`}
-            subtitle="Utilization"
-            icon={<TrendingUp className="w-5 h-5" />}
-          />
-          <EngagementCard 
-            title="Last Login" 
-            value={`${Math.floor((Date.now() - new Date(veteran.analytics.engagement.lastPortalLogin).getTime()) / (1000 * 60 * 60 * 24))}d`}
-            subtitle="Days ago"
-            icon={<Clock className="w-5 h-5" />}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Communications Center Component
+// Communications Center Component  
 function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) {
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
@@ -579,7 +463,7 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
           </button>
         </div>
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {veteran.communications.messages.map((message) => (
+          {veteran.profileServices.communications.messages.map((message) => (
             <div 
               key={message.id}
               onClick={() => setSelectedMessage(message)}
@@ -615,7 +499,7 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Notifications</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {veteran.communications.notifications.map((notif) => (
+            {veteran.profileServices.communications.notifications.map((notif) => (
               <div key={notif.id} className={`p-3 rounded-lg ${
                 notif.priority === 'high' ? 'bg-red-500/20' :
                 notif.priority === 'medium' ? 'bg-yellow-500/20' : 'bg-gray-700'
@@ -648,23 +532,23 @@ function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) 
           <div className="bg-gray-700 rounded-lg p-4 space-y-3">
             <PreferenceToggle 
               label="Email Notifications" 
-              enabled={veteran.communications.preferences.emailNotifications} 
+              enabled={veteran.profileServices.communications.preferences?.emailNotifications} 
             />
             <PreferenceToggle 
               label="SMS Notifications" 
-              enabled={veteran.communications.preferences.smsNotifications} 
+              enabled={veteran.profileServices.communications.preferences?.smsNotifications} 
             />
             <PreferenceToggle 
               label="Phone Calls" 
-              enabled={veteran.communications.preferences.phoneCallsAllowed} 
+              enabled={veteran.profileServices.communications.preferences?.phoneCallsAllowed} 
             />
             <div className="pt-2 border-t border-gray-600">
               <p className="text-gray-400 text-sm">Preferred Contact Time</p>
-              <p className="text-white">{veteran.communications.preferences.preferredContactTime}</p>
+              <p className="text-white">{veteran.profileServices.communications.preferences?.preferredContactTime || 'Anytime'}</p>
             </div>
             <div>
               <p className="text-gray-400 text-sm">Language</p>
-              <p className="text-white">{veteran.communications.preferences.language}</p>
+              <p className="text-white">{veteran.profileServices.communications.preferences?.language || 'English'}</p>
             </div>
           </div>
         </div>

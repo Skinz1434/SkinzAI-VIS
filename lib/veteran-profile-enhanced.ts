@@ -1,6 +1,249 @@
 import { VeteranDetails } from './veteran-details';
+import { 
+  generateDeployments, 
+  generateMedicalConditions, 
+  calculateCombinedRating,
+  calculateMonthlyCompensation,
+  generateFinancialData,
+  SERVICE_ERAS,
+  MOS_EXPOSURES
+} from './veteran-data-generator';
+
+// Generate enhanced profile from basic veteran details
+export function generateVeteranProfileEnhanced(details: VeteranDetails): VeteranProfileEnhanced {
+  return {
+    ...details,
+    analytics: {
+      trends: {
+        ratingHistory: [
+          { date: new Date(2020, 0, 1), rating: 30 },
+          { date: new Date(2021, 0, 1), rating: 50 },
+          { date: new Date(2022, 0, 1), rating: 70 },
+          { date: new Date(2023, 0, 1), rating: details.mpd.disabilityRating || 70 }
+        ],
+        claimsSuccess: 0.75,
+        avgProcessingDays: 127,
+        benefitsUtilization: 0.82,
+        healthScores: [
+          { month: 'Jan', score: 75 },
+          { month: 'Feb', score: 78 },
+          { month: 'Mar', score: 82 },
+          { month: 'Apr', score: 80 },
+          { month: 'May', score: 85 },
+          { month: 'Jun', score: 88 }
+        ]
+      },
+      predictions: {
+        nextAppointment: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        claimCompletion: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        ratingIncreaseLikelihood: 0.65,
+        nextClaimApprovalProbability: 0.75,
+        appealSuccessProbability: 0.60,
+        estimatedProcessingDays: 120
+      },
+      riskScores: {
+        healthRisk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+        financialRisk: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
+        housingRisk: Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low',
+        mentalHealthRisk: Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low'
+      },
+      engagement: {
+        benefitUtilization: 60 + Math.random() * 35,  // 60-95% utilization
+        appointmentCompliance: 70 + Math.random() * 25,  // 70-95% compliance
+        portalUsage: 40 + Math.random() * 40,  // 40-80% portal usage
+        claimsActivity: 30 + Math.random() * 50,  // 30-80% claims activity
+        appointmentShowRate: 75 + Math.random() * 20,  // 75-95% show rate
+        medicationAdherence: 80 + Math.random() * 15,  // 80-95% adherence
+        portalUsageMinutes: Math.floor(Math.random() * 120) + 30,  // 30-150 minutes
+        lastPortalLogin: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000))  // Within last 30 days
+      },
+      comparisons: {
+        vsNationalAverage: {
+          rating: Math.random() * 40 - 20,  // -20 to +20 percentage points
+          benefits: Math.random() * 30 - 15, // -15 to +15 percentage points
+          healthcare: Math.random() * 25 - 10 // -10 to +15 percentage points
+        },
+        vsPeerGroup: {
+          rating: Math.random() * 30 - 15,
+          benefits: Math.random() * 20 - 10,
+          healthcare: Math.random() * 20 - 10
+        }
+      }
+    },
+    profileServices: {
+      eligibility: {
+        vaHealthcare: { eligible: true, enrollmentDate: new Date(2020, 0, 1), percentageUsed: 75 },
+        compensationBenefits: { eligible: true, enrollmentDate: new Date(2019, 6, 1), percentageUsed: 100 },
+        educationBenefits: { eligible: true, enrollmentDate: new Date(2018, 0, 1), percentageUsed: 45 },
+        homeLoanBenefits: { eligible: true, enrollmentDate: new Date(2021, 0, 1), percentageUsed: 0 },
+        lifeInsurance: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 100 },
+        burialBenefits: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 0 },
+        vocationalRehab: { eligible: true, enrollmentDate: new Date(2020, 6, 1), percentageUsed: 30 },
+        pensionBenefits: { eligible: false },
+        spouseBenefits: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 20 }
+      },
+      awards: [
+        { name: 'Purple Heart', date: new Date(2008, 5, 15), citation: 'For wounds received in combat', category: 'Valor' },
+        { name: 'Bronze Star Medal', date: new Date(2009, 2, 10), citation: 'For heroic service', category: 'Valor' }
+      ],
+      treatmentRecords: [
+        { date: new Date(2023, 10, 15), type: 'Mental Health', provider: 'Dr. Smith', facility: 'VA Medical Center', notes: 'PTSD treatment session', outcome: 'Stable' }
+      ],
+      riskScore: { overall: 35, suicide: 15, homelessness: 10, substance: 20, financial: 25, medical: 40 },
+      predictions: { hospitalizationRisk: 0.25, readmissionRisk: 0.15, medicationAdherence: 0.85, appointmentAdherence: 0.90, benefitsUtilization: 0.75 },
+      integrations: {
+        myHealtheVet: { connected: true, lastSync: new Date(), status: 'Active' },
+        vaBenefits: { connected: true, lastSync: new Date(), status: 'Active' },
+        communityCareCar: { connected: false, lastSync: null, status: 'Not Connected' },
+        dodSelfService: { connected: true, lastSync: new Date(Date.now() - 86400000), status: 'Active' },
+        tricare: { connected: true, lastSync: new Date(), status: 'Active' }
+      },
+      communications: {
+        messages: [{ id: '1', date: new Date(), from: 'VA Benefits', subject: 'Claim Status Update', read: false, priority: 'high' }],
+        notifications: [{ id: '1', date: new Date(), type: 'alert', message: 'New prescription ready', actionRequired: true }],
+        preferences: {
+          emailNotifications: true,
+          smsNotifications: false,
+          phoneCallsAllowed: true,
+          preferredContactTime: '9AM - 5PM',
+          language: 'English'
+        }
+      },
+      auditTrail: [{ timestamp: new Date(), action: 'Profile Accessed', user: 'System Admin', details: 'Routine review', system: 'VIS' }],
+      emergencyInfo: {
+        emergencyContacts: [{ name: 'Jane Doe', relationship: 'Spouse', phone: '555-0100', altPhone: '555-0101' }],
+        bloodType: 'O+',
+        allergies: ['Penicillin'],
+        advanceDirectives: true,
+        organDonor: true
+      },
+      financialInfo: {
+        monthlyIncome: 3500,
+        creditScore: 720,
+        debts: [{ type: 'VA Home Loan', amount: 250000, monthlyPayment: 1500, status: 'Current' }],
+        bankingInfo: { hasDirectDeposit: true, accountType: 'Checking', lastUpdated: new Date() }
+      },
+      legalInfo: {
+        powerOfAttorney: { name: 'Jane Doe', type: 'Healthcare', date: new Date(2020, 0, 1) },
+        powerOfAttorneyHistory: [
+          { name: 'DAV', type: 'Claims', date: new Date(2019, 6, 1), status: 'Active', form2122: 'VA Form 21-22 Filed' },
+          { name: 'Jane Doe', type: 'Healthcare', date: new Date(2020, 0, 1), status: 'Active', form2122: 'VA Form 21-22 Filed' },
+          { name: 'VFW', type: 'Claims', date: new Date(2018, 3, 15), status: 'Revoked', form2122: 'VA Form 21-22 Revoked' }
+        ],
+        willStatus: true,
+        willLastUpdated: new Date(2021, 6, 1),
+        advanceDirectives: true,
+        representation: {
+          attorney: Math.random() > 0.7 ? 'Private Attorney' : 'None',
+          vso: 'DAV',
+          privateAttorney: Math.random() > 0.7 ? {
+            name: 'John Smith, Esq.',
+            firm: 'Smith & Associates Law Firm',
+            barNumber: 'CA123456',
+            address: '123 Main St, Anytown, CA 90210',
+            phone: '(555) 123-4567',
+            email: 'john.smith@lawfirm.com',
+            feeStructure: {
+              type: Math.random() > 0.5 ? 'percentage' : 'hourly',
+              hourlyRate: Math.random() > 0.5 ? Math.floor(Math.random() * 400) + 200 : undefined,
+              percentage: Math.random() > 0.5 ? Math.floor(Math.random() * 25) + 15 : undefined,
+              monthlyRetainer: Math.random() > 0.3 ? Math.floor(Math.random() * 1000) + 500 : undefined,
+              isProblematic: Math.random() > 0.6 // Red flag for high percentage fees
+            },
+            dateHired: new Date(2022, Math.floor(Math.random() * 12), 1),
+            cases: ['VA Disability Appeal', 'Medical Benefits Claim', 'Education Benefits'],
+            performance: {
+              successRate: Math.random() * 30 + 40, // 40-70% success rate
+              avgProcessingTime: Math.floor(Math.random() * 180) + 60, // 60-240 days
+              clientSatisfaction: Math.random() * 40 + 60 // 60-100%
+            }
+          } : undefined
+        },
+        form2122History: [
+          {
+            formId: 'VA21-22-001',
+            dateFiled: new Date(2019, 6, 1),
+            representative: 'DAV',
+            type: 'Claims',
+            status: 'Approved',
+            effectiveDate: new Date(2019, 6, 15),
+            expirationDate: new Date(2024, 6, 1)
+          },
+          {
+            formId: 'VA21-22-002',
+            dateFiled: new Date(2020, 0, 1),
+            representative: 'Jane Doe',
+            type: 'Healthcare',
+            status: 'Approved',
+            effectiveDate: new Date(2020, 0, 15),
+            expirationDate: new Date(2025, 0, 1)
+          }
+        ],
+        pendingActions: [],
+        beneficiaries: [{ name: 'Jane Doe', relationship: 'Spouse', percentage: 50 }]
+      },
+      qualityMetrics: {
+        dataCompleteness: 92,
+        lastVerification: new Date(),
+        verificationMethod: 'Automated',
+        discrepancies: [],
+        confidenceScore: 97
+      },
+      insurancePlans: [{ provider: 'TRICARE', planType: 'Prime', policyNumber: 'TC123456', groupNumber: 'MIL001', effectiveDate: new Date(2015, 0, 1), status: 'Active', coverageLevel: 'Family' }],
+      appeals: [],
+      dischargeStatus: { type: 'Honorable', date: new Date(2010, 11, 31), characterOfService: 'Honorable', reenlistmentCode: 'RE-1' }
+    }
+  };
+}
 
 export interface VeteranProfileEnhanced extends VeteranDetails {
+  // Analytics data
+  analytics: {
+    trends: {
+      ratingHistory: Array<{ date: Date; rating: number }>;
+      claimsSuccess: number;
+      avgProcessingDays: number;
+      benefitsUtilization: number;
+      healthScores: Array<{ month: string; score: number }>;
+    };
+    predictions: {
+      nextAppointment: Date;
+      claimCompletion: Date;
+      ratingIncreaseLikelihood: number;
+      nextClaimApprovalProbability: number;
+      appealSuccessProbability: number;
+      estimatedProcessingDays: number;
+    };
+    riskScores: {
+      healthRisk: 'low' | 'medium' | 'high';
+      financialRisk: 'low' | 'medium' | 'high';
+      housingRisk: 'low' | 'medium' | 'high';
+      mentalHealthRisk: 'low' | 'medium' | 'high';
+    };
+    engagement: {
+      benefitUtilization: number;
+      appointmentCompliance: number;
+      portalUsage: number;
+      claimsActivity: number;
+      appointmentShowRate: number;
+      medicationAdherence: number;
+      portalUsageMinutes: number;
+      lastPortalLogin: Date;
+    };
+    comparisons: {
+      vsNationalAverage: {
+        rating: number;
+        benefits: number;
+        healthcare: number;
+      };
+      vsPeerGroup: {
+        rating: number;
+        benefits: number;
+        healthcare: number;
+      };
+    };
+  };
+  
   // Profile Services API Data
   profileServices: {
     // Eligibility & Entitlements
@@ -178,6 +421,71 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
         claimNumber: string;
       }>;
     };
+
+    // Legal Information
+    legalInfo: {
+      powerOfAttorney: {
+        name: string;
+        type: string;
+        date: Date;
+      };
+      powerOfAttorneyHistory: Array<{
+        name: string;
+        type: string;
+        date: Date;
+        status: string;
+        form2122: string;
+      }>;
+      willStatus: boolean;
+      willLastUpdated: Date;
+      advanceDirectives: boolean;
+      representation: {
+        attorney: string;
+        vso: string;
+        privateAttorney?: {
+          name: string;
+          firm: string;
+          barNumber: string;
+          address: string;
+          phone: string;
+          email: string;
+          feeStructure: {
+            type: 'percentage' | 'hourly';
+            hourlyRate?: number;
+            percentage?: number;
+            monthlyRetainer?: number;
+            isProblematic: boolean;
+          };
+          dateHired: Date;
+          cases: string[];
+          performance: {
+            successRate: number;
+            avgProcessingTime: number;
+            clientSatisfaction: number;
+          };
+        };
+      };
+      form2122History: Array<{
+        formId: string;
+        dateFiled: Date;
+        representative: string;
+        type: string;
+        status: string;
+        effectiveDate: Date;
+        expirationDate: Date;
+      }>;
+      pendingActions: Array<{
+        type: string;
+        status: string;
+        description: string;
+        filingDate: Date;
+      }>;
+      beneficiaries: Array<{
+        name: string;
+        relationship: string;
+        percentage: number;
+      }>;
+    };
   };
 
   // Analytics & Insights
@@ -347,27 +655,7 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
     };
   };
 
-  // Legal Information
-  legal: {
-    courtOrders: Array<{
-      type: string;
-      court: string;
-      date: Date;
-      description: string;
-      documents: string[];
-    }>;
-    guardianship: {
-      hasGuardian: boolean;
-      guardianName?: string;
-      guardianContact?: string;
-      courtAppointed: boolean;
-    };
-    incarceration: {
-      currentlyIncarcerated: boolean;
-      facility?: string;
-      releaseDate?: Date;
-    };
-  };
+
 }
 
 // Generate enhanced mock data

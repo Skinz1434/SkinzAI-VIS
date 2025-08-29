@@ -11,7 +11,7 @@ interface SystemHealthProps {
 export function SystemHealth({ health }: SystemHealthProps) {
   const defaultHealth: SystemHealthType = health || {
     status: 'operational',
-    vadirApi: { status: 'up', responseTime: 142, lastCheck: new Date(), errorRate: 0.3 },
+    vetProfileApi: { status: 'up', responseTime: 142, lastCheck: new Date(), errorRate: 0.3 },
     profileService: { status: 'up', responseTime: 98, lastCheck: new Date(), errorRate: 0.1 },
     database: { status: 'up', responseTime: 12, lastCheck: new Date(), errorRate: 0 },
     responseTime: 142,
@@ -41,7 +41,7 @@ export function SystemHealth({ health }: SystemHealthProps) {
   };
 
   const services = [
-    { name: 'Vadir API', icon: Cloud, data: defaultHealth.vadirApi },
+    { name: 'Vet Profile API', icon: Cloud, data: defaultHealth.vetProfileApi },
     { name: 'Profile Service', icon: Shield, data: defaultHealth.profileService },
     { name: 'Database', icon: Database, data: defaultHealth.database }
   ];
@@ -65,44 +65,52 @@ export function SystemHealth({ health }: SystemHealthProps) {
       </div>
 
       <div className="space-y-3">
-        {services.map((service, index) => (
-          <motion.div
-            key={service.name}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`p-4 rounded-lg border ${getStatusColor(service.data.status)}`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <service.icon className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="text-white font-medium">{service.name}</p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    Response: {service.data.responseTime}ms | Error Rate: {service.data.errorRate}%
-                  </p>
+        {services.map((service, index) => {
+          const serviceData = service.data || { 
+            status: 'down' as const, 
+            responseTime: 0, 
+            errorRate: 0, 
+            lastCheck: new Date() 
+          };
+          return (
+            <motion.div
+              key={service.name}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`p-4 rounded-lg border ${getStatusColor(serviceData.status)}`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <service.icon className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="text-white font-medium">{service.name}</p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      Response: {serviceData.responseTime}ms | Error Rate: {serviceData.errorRate}%
+                    </p>
+                  </div>
+                </div>
+                {getStatusIcon(serviceData.status)}
+              </div>
+              <div className="mt-3">
+                <div className="w-full h-1 bg-skinz-bg-tertiary rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${100 - (serviceData.errorRate * 10)}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    className={`h-full ${
+                      serviceData.status === 'up' 
+                        ? 'bg-green-500' 
+                        : serviceData.status === 'degraded' 
+                        ? 'bg-yellow-500' 
+                        : 'bg-red-500'
+                    }`}
+                  />
                 </div>
               </div>
-              {getStatusIcon(service.data.status)}
-            </div>
-            <div className="mt-3">
-              <div className="w-full h-1 bg-skinz-bg-tertiary rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${100 - (service.data.errorRate * 10)}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                  className={`h-full ${
-                    service.data.status === 'up' 
-                      ? 'bg-green-500' 
-                      : service.data.status === 'degraded' 
-                      ? 'bg-yellow-500' 
-                      : 'bg-red-500'
-                  }`}
-                />
-              </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-skinz-border-subtle">

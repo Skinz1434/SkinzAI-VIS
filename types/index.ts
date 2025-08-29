@@ -12,7 +12,7 @@ export interface Veteran {
   disabilityRating: number;
   claims: Claim[];
   documents: Document[];
-  vadirSyncStatus: VadirSyncStatus;
+  vetProfileSyncStatus: VetProfileSyncStatus;
   lastSyncDate: Date | null;
   accuracy: number;
   createdAt: Date;
@@ -27,7 +27,9 @@ export interface Claim {
   status: ClaimStatus;
   filingDate: Date;
   lastActionDate: Date;
-  estimatedCompletionDate: Date | null;
+  lastAction?: string;
+  estimatedCompletionDate?: Date | null;
+  estimatedCompletion?: Date;
   rating: number | null;
   description: string;
   evidence: Evidence[];
@@ -65,7 +67,7 @@ export interface Note {
   createdAt: Date;
 }
 
-export interface VadirSyncStatus {
+export interface VetProfileSyncStatus {
   status: 'pending' | 'syncing' | 'success' | 'error' | 'fallback';
   lastSync: Date | null;
   accuracy: number;
@@ -105,7 +107,7 @@ export interface DashboardMetrics {
   totalVeterans: number;
   activeClaiMs: number;
   averageProcessingTime: number;
-  vadirAccuracy: number;
+  vetProfileAccuracy: number;
   systemHealth: SystemHealth;
   recentActivity: Activity[];
   claimsByStatus: Record<ClaimStatus, number>;
@@ -114,7 +116,7 @@ export interface DashboardMetrics {
 
 export interface SystemHealth {
   status: 'operational' | 'degraded' | 'down';
-  vadirApi: ServiceStatus;
+  vetProfileApi: ServiceStatus;
   profileService: ServiceStatus;
   database: ServiceStatus;
   responseTime: number;
@@ -216,7 +218,7 @@ export enum Permission {
   VIEW_CLAIMS = 'VIEW_CLAIMS',
   EDIT_CLAIMS = 'EDIT_CLAIMS',
   APPROVE_CLAIMS = 'APPROVE_CLAIMS',
-  SYNC_VADIR = 'SYNC_VADIR',
+  SYNC_VET_PROFILE = 'SYNC_VET_PROFILE',
   GENERATE_REPORTS = 'GENERATE_REPORTS',
   MANAGE_USERS = 'MANAGE_USERS',
   VIEW_ANALYTICS = 'VIEW_ANALYTICS',
@@ -231,7 +233,7 @@ export enum ActivityType {
   CLAIM_APPROVED = 'CLAIM_APPROVED',
   CLAIM_DENIED = 'CLAIM_DENIED',
   DOCUMENT_UPLOADED = 'DOCUMENT_UPLOADED',
-  VADIR_SYNC = 'VADIR_SYNC',
+  VET_PROFILE_SYNC = 'VET_PROFILE_SYNC',
   DD214_FALLBACK = 'DD214_FALLBACK',
   USER_LOGIN = 'USER_LOGIN',
   REPORT_GENERATED = 'REPORT_GENERATED'

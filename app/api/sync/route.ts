@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   const { veteranId } = await request.json();
   
-  // Simulate MPD/VADIR sync process
+  // Simulate MPD/Vet Profile sync process
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   const accuracy = 96 + Math.random() * 3;
