@@ -187,7 +187,7 @@ export function VeteranDetailModalEnhanced({
             />
             <MetricBadge 
               label="Appeals" 
-              value={veteran.appeals?.length || 0} 
+              value={veteran.profileServices?.appeals?.length || 0} 
               subtext="active"
               color="orange" 
             />
