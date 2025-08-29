@@ -22,17 +22,19 @@ import {
 } from 'recharts';
 
 // Import all profile components
+import VeteranOverviewEnhanced from './profile-tabs/VeteranOverviewEnhanced';
 import PersonalProfile from './profile-tabs/PersonalProfile';
-import ServiceProfile from './profile-tabs/ServiceProfile';
+import ServiceProfileEnhanced from './profile-tabs/ServiceProfileEnhanced';
 import MedicalProfile from './profile-tabs/MedicalProfile';
-import BenefitsProfile from './profile-tabs/BenefitsProfile';
+import BenefitsProfileEnhanced from './profile-tabs/BenefitsProfileEnhanced';
 import ClaimsProfile from './profile-tabs/ClaimsProfile';
 import DocumentsProfile from './profile-tabs/DocumentsProfile';
 import FinancialProfile from './profile-tabs/FinancialProfile';
-import LegalProfile from './profile-tabs/LegalProfile';
+import LegalProfileEnhanced from './profile-tabs/LegalProfileEnhanced';
 import AuditHistory from './profile-tabs/AuditHistory';
-import AnalyticsInsightsEnhanced from './profile-tabs/AnalyticsInsightsEnhanced';
+import AnalyticsInsightsUltraEnhanced from './profile-tabs/AnalyticsInsightsUltraEnhanced';
 import CompleteProfileEnhanced from './profile-tabs/CompleteProfileEnhanced';
+import CommunicationsPortalEnhanced from './profile-tabs/CommunicationsPortalEnhanced';
 
 interface VeteranDetailModalEnhancedProps {
   veteran: VeteranProfileEnhanced;
@@ -248,23 +250,23 @@ export function VeteranDetailModalEnhanced({
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto bg-gray-800 p-6">
-            {activeMainTab === 'overview' && <OverviewDashboard veteran={veteran} />}
+            {activeMainTab === 'overview' && <VeteranOverviewEnhanced veteran={veteran} />}
             {activeMainTab === 'profile' && (
               <>
                 {activeProfileTab === 'complete' && <CompleteProfileEnhanced veteran={veteran} />}
                 {activeProfileTab === 'personal' && <PersonalProfile veteran={veteran} />}
-                {activeProfileTab === 'service' && <ServiceProfile veteran={veteran} />}
+                {activeProfileTab === 'service' && <ServiceProfileEnhanced veteran={veteran} />}
                 {activeProfileTab === 'medical' && <MedicalProfile veteran={veteran} />}
-                {activeProfileTab === 'benefits' && <BenefitsProfile veteran={veteran} />}
+                {activeProfileTab === 'benefits' && <BenefitsProfileEnhanced veteran={veteran} />}
                 {activeProfileTab === 'claims' && <ClaimsProfile veteran={veteran} />}
                 {activeProfileTab === 'documents' && <DocumentsProfile veteran={veteran} />}
                 {activeProfileTab === 'eligibility' && <EligibilityProfile veteran={veteran} />}
                 {activeProfileTab === 'financial' && <FinancialProfile veteran={veteran} />}
-                {activeProfileTab === 'legal' && <LegalProfile veteran={veteran} />}
+                {activeProfileTab === 'legal' && <LegalProfileEnhanced veteran={veteran} />}
               </>
             )}
-            {activeMainTab === 'analytics' && <AnalyticsInsightsEnhanced veteran={veteran} />}
-            {activeMainTab === 'communications' && <CommunicationsCenter veteran={veteran} />}
+            {activeMainTab === 'analytics' && <AnalyticsInsightsUltraEnhanced veteran={veteran} />}
+            {activeMainTab === 'communications' && <CommunicationsPortalEnhanced veteran={veteran} />}
             {activeMainTab === 'audit' && <AuditHistory veteran={veteran} />}
           </div>
         </div>
@@ -449,112 +451,6 @@ function OverviewDashboard({ veteran }: { veteran: VeteranProfileEnhanced }) {
   );
 }
 
-// Communications Center Component  
-function CommunicationsCenter({ veteran }: { veteran: VeteranProfileEnhanced }) {
-  const [selectedMessage, setSelectedMessage] = useState<any>(null);
-
-  return (
-    <div className="grid grid-cols-3 gap-6 h-full">
-      {/* Messages List */}
-      <div className="col-span-2 space-y-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Messages</h3>
-          <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-            Compose
-          </button>
-        </div>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
-          {veteran.profileServices.communications?.messages?.map((message) => (
-            <div 
-              key={message.id}
-              onClick={() => setSelectedMessage(message)}
-              className={`p-4 rounded-lg cursor-pointer transition-all ${
-                message.read ? 'bg-gray-700' : 'bg-gray-700/70 border-l-4 border-blue-500'
-              } hover:bg-gray-600`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-white">{message.from}</span>
-                    {!message.read && (
-                      <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
-                        New
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-white font-medium mt-1">{message.subject}</p>
-                  <p className="text-gray-400 text-sm mt-1 line-clamp-2">{message.body}</p>
-                </div>
-                <span className="text-gray-500 text-xs">
-                  {new Date(message.date).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Notifications & Preferences */}
-      <div className="space-y-4">
-        {/* Notifications */}
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-3">Notifications</h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {veteran.profileServices.communications?.notifications?.map((notif) => (
-              <div key={notif.id} className={`p-3 rounded-lg ${
-                notif.actionRequired ? 'bg-yellow-500/20' : 'bg-gray-700'
-              }`}>
-                <div className="flex items-start gap-2">
-                  <Bell className={`w-4 h-4 mt-0.5 ${
-                    notif.actionRequired ? 'text-yellow-400' : 'text-gray-400'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-white text-sm">{notif.message}</p>
-                    <p className="text-gray-500 text-xs mt-1">
-                      {new Date(notif.date).toLocaleString()}
-                    </p>
-                    {notif.actionRequired && (
-                      <button className="text-blue-400 text-xs mt-1 hover:underline">
-                        Take Action →
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Contact Preferences */}
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-3">Contact Preferences</h3>
-          <div className="bg-gray-700 rounded-lg p-4 space-y-3">
-            <PreferenceToggle 
-              label="Email Notifications" 
-              enabled={veteran.profileServices.communications.preferences?.emailNotifications} 
-            />
-            <PreferenceToggle 
-              label="SMS Notifications" 
-              enabled={veteran.profileServices.communications.preferences?.smsNotifications} 
-            />
-            <PreferenceToggle 
-              label="Phone Calls" 
-              enabled={veteran.profileServices.communications.preferences?.phoneCallsAllowed} 
-            />
-            <div className="pt-2 border-t border-gray-600">
-              <p className="text-gray-400 text-sm">Preferred Contact Time</p>
-              <p className="text-white">{veteran.profileServices.communications.preferences?.preferredContactTime || 'Anytime'}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Language</p>
-              <p className="text-white">{veteran.profileServices.communications.preferences?.language || 'English'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Helper Components
 function MetricBadge({ label, value, subtext, color, trend }: any) {
