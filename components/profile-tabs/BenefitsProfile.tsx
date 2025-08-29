@@ -142,35 +142,35 @@ export default function BenefitsProfile({ veteran }: BenefitsProfileProps) {
                   <p className="text-white font-medium">
                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                   </p>
-                  {value.eligible ? (
+                  {'eligible' in value && value.eligible ? (
                     <CheckCircle className="w-5 h-5 text-green-400" />
                   ) : (
                     <XCircle className="w-5 h-5 text-red-400" />
                   )}
                 </div>
-                <p className={`text-sm ${value.eligible ? 'text-green-400' : 'text-red-400'}`}>
-                  {value.eligible ? 'Eligible' : 'Not Eligible'}
+                <p className={`text-sm ${'eligible' in value && value.eligible ? 'text-green-400' : 'text-red-400'}`}>
+                  {'eligible' in value && value.eligible ? 'Eligible' : 'Not Eligible'}
                 </p>
-                {value.enrollmentDate && (
+                {'enrollmentDate' in value && value.enrollmentDate && (
                   <p className="text-skinz-text-secondary text-xs mt-1">
                     Enrolled: {new Date(value.enrollmentDate).toLocaleDateString()}
                   </p>
                 )}
-                {value.expirationDate && (
+                {'expirationDate' in value && (value as any).expirationDate && (
                   <p className="text-skinz-text-secondary text-xs mt-1">
-                    Expires: {new Date(value.expirationDate).toLocaleDateString()}
+                    Expires: {new Date((value as any).expirationDate).toLocaleDateString()}
                   </p>
                 )}
-                {value.percentageUsed !== undefined && (
+                {'percentageUsed' in value && (value as any).percentageUsed !== undefined && (
                   <div className="mt-2">
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-skinz-text-secondary">Usage</span>
-                      <span className="text-white">{value.percentageUsed}%</span>
+                      <span className="text-white">{(value as any).percentageUsed}%</span>
                     </div>
                     <div className="w-full bg-skinz-bg-primary rounded-full h-2">
                       <div 
                         className="bg-skinz-accent h-2 rounded-full"
-                        style={{ width: `${value.percentageUsed}%` }}
+                        style={{ width: `${(value as any).percentageUsed}%` }}
                       ></div>
                     </div>
                   </div>

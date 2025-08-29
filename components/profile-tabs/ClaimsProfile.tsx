@@ -373,7 +373,7 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                   <div>
                     <p className="text-skinz-text-secondary">Filed Date</p>
-                    <p className="text-white">{new Date(appeal.filingDate).toLocaleDateString()}</p>
+                    <p className="text-white">{new Date(appeal.issueDate).toLocaleDateString()}</p>
                   </div>
                   <div>
                     <p className="text-skinz-text-secondary">Docket Number</p>
@@ -381,7 +381,7 @@ export default function ClaimsProfile({ veteran }: ClaimsProfileProps) {
                   </div>
                   <div>
                     <p className="text-skinz-text-secondary">Current Stage</p>
-                    <p className="text-white">{appeal.currentStage}</p>
+                    <p className="text-white">{appeal.status}</p>
                   </div>
                 </div>
                 

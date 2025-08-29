@@ -60,7 +60,7 @@ const EnhancedTERA = ({ veteran }: { veteran: VeteranProfileEnhanced }) => {
 
   // Comprehensive toxic exposure analysis
   const analyzeToxicExposures = () => {
-    const exposures = [];
+    const exposures: any[] = [];
     const exposureRisks = {
       burnPits: 0,
       depletedUranium: 0,
@@ -167,7 +167,7 @@ const EnhancedTERA = ({ veteran }: { veteran: VeteranProfileEnhanced }) => {
     });
 
     // Add occupational exposures based on MOS
-    const mos = veteran.service?.mos?.toLowerCase() || '';
+    const mos = veteran.mpr?.specialties?.[0]?.code?.toLowerCase() || '';
     if (mos && (mos.includes('mechanic') || mos.includes('motor') || mos.includes('aviation'))) {
       exposureRisks.solvents += 60;
       exposureRisks.asbestos += 50;
@@ -230,8 +230,8 @@ const EnhancedTERA = ({ veteran }: { veteran: VeteranProfileEnhanced }) => {
     }
 
     // Check current conditions against presumptive list
-    const hasPresumptiveCondition = veteran.medical?.conditions?.some(condition => {
-      const condName = condition.name.toLowerCase();
+    const hasPresumptiveCondition = veteran.mpd?.conditions?.some((condition: any) => {
+      const condName = condition.description.toLowerCase();
       return condName.includes('asthma') || condName.includes('cancer') || 
              condName.includes('respiratory') || condName.includes('copd') ||
              condName.includes('diabetes') || condName.includes('hypertension');
@@ -501,7 +501,7 @@ const EnhancedTERA = ({ veteran }: { veteran: VeteranProfileEnhanced }) => {
                     </div>
                     <p className="text-gray-400 text-sm mb-2">{exposure.description}</p>
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {exposure.symptoms.slice(0, 3).map((symptom, idx) => (
+                      {exposure.symptoms.slice(0, 3).map((symptom: any, idx: number) => (
                         <span key={idx} className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded">
                           {symptom}
                         </span>
@@ -754,7 +754,7 @@ export default function AnalyticsInsightsEnhanced({ veteran }: AnalyticsInsights
                   />
                 </div>
                 <div className="text-2xl font-bold text-yellow-400">
-                  {veteran.analytics?.predictions?.ratingIncreaselikelihood || 45}%
+                  {veteran.analytics?.predictions?.ratingIncreaseLikelihood || 45}%
                 </div>
                 <p className="text-gray-500 text-xs mt-1">likelihood</p>
               </div>
@@ -925,9 +925,9 @@ export default function AnalyticsInsightsEnhanced({ veteran }: AnalyticsInsights
                   <BarChart data={[
                     { 
                       category: 'Disability Rating', 
-                      veteran: veteran.disability?.combinedRating || 0, 
+                      veteran: veteran.mpd?.disabilityRating || 0, 
                       average: 45,
-                      difference: (veteran.disability?.combinedRating || 0) - 45
+                      difference: (veteran.mpd?.disabilityRating || 0) - 45
                     },
                     { 
                       category: 'Monthly Benefits', 

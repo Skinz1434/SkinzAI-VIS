@@ -72,22 +72,75 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
     },
     profileServices: {
       eligibility: {
-        vaHealthcare: { eligible: true, enrollmentDate: new Date(2020, 0, 1), percentageUsed: 75 },
-        compensationBenefits: { eligible: true, enrollmentDate: new Date(2019, 6, 1), percentageUsed: 100 },
-        educationBenefits: { eligible: true, enrollmentDate: new Date(2018, 0, 1), percentageUsed: 45 },
-        homeLoanBenefits: { eligible: true, enrollmentDate: new Date(2021, 0, 1), percentageUsed: 0 },
-        lifeInsurance: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 100 },
-        burialBenefits: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 0 },
-        vocationalRehab: { eligible: true, enrollmentDate: new Date(2020, 6, 1), percentageUsed: 30 },
+        vaHealthcare: { 
+          eligible: true, 
+          enrollmentGroup: 'Priority Group 1',
+          enrollmentDate: new Date(2020, 0, 1), 
+          copayRequired: false,
+          catastrophicCap: 3000,
+          medicareEligible: false,
+          medicaidEligible: false
+        },
+        compensationBenefits: { 
+          eligible: true, 
+          currentRating: details.mpd.disabilityRating,
+          combinedRating: details.mpd.disabilityRating,
+          individualRatings: details.mpd.conditions.map(c => ({
+            condition: c.description,
+            rating: c.rating,
+            effectiveDate: details.mpd.effectiveDate,
+            static: true
+          })),
+          futureExams: []
+        },
+        educationBenefits: { 
+          chapter33: true, 
+          chapter30: false,
+          monthsRemaining: details.benefits.education.giBlllRemaining,
+          exhaustionDate: new Date(2030, 0, 1),
+          certificateOfEligibility: 'COE-12345',
+          yellowRibbon: false,
+          stemExtension: false
+        },
+        homeLoan: { 
+          eligible: true, 
+          entitlement: 424100,
+          used: details.benefits.housing.loanAmount || 0,
+          available: 424100 - (details.benefits.housing.loanAmount || 0),
+          coe: 'COE-HL-789',
+          previousLoans: details.benefits.housing.hasVALoan ? 1 : 0
+        },
+        burialBenefits: { 
+          eligible: true, 
+          prePlanned: false,
+          cemetery: 'Arlington National Cemetery',
+          plotAllowance: 890
+        },
+        vocationalRehab: { 
+          eligible: true, 
+          chapter31: true,
+          monthsRemaining: 36,
+          counselorAssigned: 'Jane Smith',
+          plan: 'Computer Science Degree'
+        },
         pensionBenefits: { eligible: false },
         spouseBenefits: { eligible: true, enrollmentDate: new Date(2019, 0, 1), percentageUsed: 20 }
       },
       awards: [
-        { name: 'Purple Heart', date: new Date(2008, 5, 15), citation: 'For wounds received in combat', category: 'Valor' },
-        { name: 'Bronze Star Medal', date: new Date(2009, 2, 10), citation: 'For heroic service', category: 'Valor' }
+        { name: 'Purple Heart', date: new Date(2008, 5, 15), citation: 'For wounds received in combat', image: '', precedence: 1, category: 'valor' },
+        { name: 'Bronze Star Medal', date: new Date(2009, 2, 10), citation: 'For heroic service', image: '', precedence: 2, category: 'valor' }
       ],
       treatmentRecords: [
-        { date: new Date(2023, 10, 15), type: 'Mental Health', provider: 'Dr. Smith', facility: 'VA Medical Center', notes: 'PTSD treatment session', outcome: 'Stable' }
+        { 
+          date: new Date(2023, 10, 15), 
+          facility: 'VA Medical Center', 
+          provider: 'Dr. Smith', 
+          chiefComplaint: 'Mental Health',
+          diagnosis: 'PTSD',
+          treatment: 'Cognitive Behavioral Therapy',
+          followUp: 'Follow up in 4 weeks',
+          documents: ['treatment-note-123.pdf']
+        }
       ],
       riskScore: { overall: 35, suicide: 15, homelessness: 10, substance: 20, financial: 25, medical: 40 },
       predictions: { hospitalizationRisk: 0.25, readmissionRisk: 0.15, medicationAdherence: 0.85, appointmentAdherence: 0.90, benefitsUtilization: 0.75 },
@@ -205,6 +258,8 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
       avgProcessingDays: number;
       benefitsUtilization: number;
       healthScores: Array<{ month: string; score: number }>;
+      benefitHistory: Array<{ date: Date; amount: number }>;
+      claimHistory: Array<{ date: Date; status: string }>;
     };
     predictions: {
       nextAppointment: Date;
@@ -219,6 +274,9 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
       financialRisk: 'low' | 'medium' | 'high';
       housingRisk: 'low' | 'medium' | 'high';
       mentalHealthRisk: 'low' | 'medium' | 'high';
+      suicideRisk: 'low' | 'medium' | 'high';
+      homelessnessRisk: 'low' | 'medium' | 'high';
+      substanceAbuseRisk: 'low' | 'medium' | 'high';
     };
     engagement: {
       benefitUtilization: number;
@@ -488,56 +546,6 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
     };
   };
 
-  // Analytics & Insights
-  analytics: {
-    // Risk Scores
-    riskScores: {
-      suicideRisk: 'low' | 'medium' | 'high';
-      homelessnessRisk: 'low' | 'medium' | 'high';
-      financialRisk: 'low' | 'medium' | 'high';
-      healthRisk: 'low' | 'medium' | 'high';
-      substanceAbuseRisk: 'low' | 'medium' | 'high';
-    };
-
-    // Predictive Models
-    predictions: {
-      nextClaimApprovalProbability: number;
-      estimatedProcessingDays: number;
-      ratingIncreaselikelihood: number;
-      appealSuccessProbability: number;
-    };
-
-    // Engagement Metrics
-    engagement: {
-      lastPortalLogin: Date;
-      portalUsageMinutes: number;
-      appointmentShowRate: number;
-      medicationAdherence: number;
-      benefitUtilization: number;
-    };
-
-    // Comparative Analysis
-    comparisons: {
-      vsNationalAverage: {
-        rating: number;
-        benefits: number;
-        healthcare: number;
-      };
-      vsPeerGroup: {
-        rating: number;
-        benefits: number;
-        healthcare: number;
-      };
-    };
-
-    // Trends
-    trends: {
-      ratingHistory: Array<{ date: Date; rating: number }>;
-      benefitHistory: Array<{ date: Date; amount: number }>;
-      healthScores: Array<{ date: Date; score: number }>;
-      claimHistory: Array<{ date: Date; status: string }>;
-    };
-  };
 
   // Communication Center
   communications: {
@@ -630,6 +638,29 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
       field: string;
       issue: string;
       priority: string;
+    }>;
+  };
+
+  // Legal Information
+  legalInfo: {
+    powersOfAttorney: Array<{
+      type: string;
+      representative: string;
+      dateAppointed: Date;
+      status: string;
+    }>;
+    appeals: Array<{
+      id: string;
+      type: string;
+      status: string;
+      filingDate: Date;
+      issues: string[];
+    }>;
+    courtCases: Array<{
+      caseNumber: string;
+      court: string;
+      status: string;
+      filingDate: Date;
     }>;
   };
 

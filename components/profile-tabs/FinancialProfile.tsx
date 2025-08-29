@@ -9,7 +9,7 @@ interface FinancialProfileProps {
 }
 
 export default function FinancialProfile({ veteran }: FinancialProfileProps) {
-  const financialData = veteran.profileServices?.financialInfo;
+  const financialData = veteran.profileServices?.financial;
   
   return (
     <div className="space-y-6">

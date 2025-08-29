@@ -78,8 +78,8 @@ export function VeteranDetailModal({ veteran, isOpen, onClose, onSync, isSyncing
               <QuickStat label="Service Years" value={veteran.mpr.totalServiceYears} color="blue" />
               <QuickStat label="Monthly Benefit" value={`$${veteran.benefits.monthlyAmount}`} color="yellow" />
               <QuickStat label="Claims" value={veteran.claims.length} color="purple" />
-              <QuickStat label="Vadir Accuracy" value={`${veteran.vadirStatus.accuracy.toFixed(1)}%`} color="cyan" />
-              <QuickStat label="Last Sync" value={new Date(veteran.vadirStatus.lastSync).toLocaleDateString()} color="gray" />
+              <QuickStat label="Vadir Accuracy" value={`${veteran.vetProfileStatus.accuracy.toFixed(1)}%`} color="cyan" />
+              <QuickStat label="Last Sync" value={new Date(veteran.vetProfileStatus.lastSync).toLocaleDateString()} color="gray" />
             </div>
           </div>
 
@@ -543,15 +543,15 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-blue-100 text-sm">Accuracy</p>
-                <p className="text-3xl font-bold">{veteran.vadirStatus.accuracy.toFixed(1)}%</p>
+                <p className="text-3xl font-bold">{veteran.vetProfileStatus.accuracy.toFixed(1)}%</p>
               </div>
               <div>
                 <p className="text-blue-100 text-sm">Status</p>
-                <p className="text-xl font-semibold">{veteran.vadirStatus.status}</p>
+                <p className="text-xl font-semibold">{veteran.vetProfileStatus.status}</p>
               </div>
               <div>
                 <p className="text-blue-100 text-sm">Last Sync</p>
-                <p className="text-lg">{new Date(veteran.vadirStatus.lastSync).toLocaleDateString()}</p>
+                <p className="text-lg">{new Date(veteran.vetProfileStatus.lastSync).toLocaleDateString()}</p>
               </div>
             </div>
           </div>
@@ -568,7 +568,7 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
       {/* Data Points Verification */}
       <Section title="Data Points Verification" icon={CheckCircle}>
         <div className="grid grid-cols-2 gap-3">
-          {Object.entries(veteran.vadirStatus.dataPoints).map(([key, value]) => (
+          {Object.entries(veteran.vetProfileStatus.dataPoints).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
               <span className="text-gray-300 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
               {value ? (
@@ -582,10 +582,10 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
       </Section>
 
       {/* Discrepancies */}
-      {veteran.vadirStatus.discrepancies.length > 0 && (
+      {veteran.vetProfileStatus.discrepancies.length > 0 && (
         <Section title="Discrepancies Found" icon={AlertTriangle}>
           <div className="space-y-2">
-            {veteran.vadirStatus.discrepancies.map((disc, index) => (
+            {veteran.vetProfileStatus.discrepancies.map((disc, index) => (
               <div key={index} className="flex items-center gap-2 text-yellow-400">
                 <AlertTriangle className="w-4 h-4" />
                 <span>{disc}</span>
@@ -596,7 +596,7 @@ function SyncTab({ veteran, onSync, isSyncing }: { veteran: VeteranDetails; onSy
       )}
 
       {/* Fallback Status */}
-      {veteran.vadirStatus.fallbackUsed && (
+      {veteran.vetProfileStatus.fallbackUsed && (
         <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
           <div className="flex items-center gap-2 text-yellow-400">
             <AlertCircle className="w-5 h-5" />

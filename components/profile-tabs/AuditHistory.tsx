@@ -9,7 +9,7 @@ interface AuditHistoryProps {
 }
 
 export default function AuditHistory({ veteran }: AuditHistoryProps) {
-  const auditTrail = veteran.profileServices?.auditTrail || [];
+  const auditTrail = veteran.auditTrail || [];
   
   const getActionIcon = (action: string) => {
     if (action.includes('Update')) return <Activity className="w-4 h-4" />;
@@ -50,7 +50,7 @@ export default function AuditHistory({ veteran }: AuditHistoryProps) {
           <div className="bg-skinz-bg-primary/50 rounded-lg p-4">
             <p className="text-skinz-text-secondary text-sm mb-2">Active Users</p>
             <p className="text-white font-bold text-2xl">
-              {[...new Set(auditTrail.map(a => a.user))].length}
+              {[...new Set(auditTrail.map((a: any) => a.user))].length}
             </p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function AuditHistory({ veteran }: AuditHistoryProps) {
         <div className="space-y-3">
           <h4 className="text-white font-medium mb-3">Recent Activity</h4>
           <div className="max-h-96 overflow-y-auto space-y-2">
-            {auditTrail.slice(0, 20).map((activity, index) => (
+            {auditTrail.slice(0, 20).map((activity: any, index: number) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-skinz-bg-tertiary/30 rounded-lg hover:bg-skinz-bg-tertiary/50 transition-colors">
                 <div className={`mt-1 ${getActionColor(activity.action)}`}>
                   {getActionIcon(activity.action)}
@@ -115,7 +115,7 @@ export default function AuditHistory({ veteran }: AuditHistoryProps) {
               </tr>
             </thead>
             <tbody>
-              {auditTrail.filter(a => a.action.includes('Access')).slice(0, 10).map((log, index) => (
+              {auditTrail.filter((a: any) => a.action.includes('Access')).slice(0, 10).map((log: any, index: number) => (
                 <tr key={index} className="border-b border-skinz-border/30">
                   <td className="py-3 text-white text-sm">
                     {new Date(log.timestamp).toLocaleString()}
