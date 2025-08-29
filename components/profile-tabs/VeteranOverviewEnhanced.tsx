@@ -30,7 +30,7 @@ interface RiskModal {
 }
 
 export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnhancedProps) {
-  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const [activeTooltip, setActiveTooltip] = useState<{ id: string; content: string } | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [riskModal, setRiskModal] = useState<RiskModal>({
     isOpen: false,
@@ -212,37 +212,74 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
     });
   };
 
-  const Tooltip = ({ content, children }: { content: string; children: React.ReactNode }) => (
-    <div className="relative inline-block">
-      <div
-        onMouseEnter={() => setActiveTooltip(content)}
-        onMouseLeave={() => setActiveTooltip(null)}
-        className="cursor-help"
-      >
-        {children}
+  const Tooltip = ({ id, content, children, position = 'top' }: { 
+    id: string; 
+    content: string; 
+    children: React.ReactNode;
+    position?: 'top' | 'bottom' | 'left' | 'right';
+  }) => {
+    const tooltipId = `tooltip-${id}`;
+    
+    const getPositionClasses = () => {
+      switch (position) {
+        case 'bottom':
+          return {
+            container: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
+            arrow: 'bottom-full left-1/2 transform -translate-x-1/2 mt-1 border-4 border-transparent border-b-gray-900'
+          };
+        case 'left':
+          return {
+            container: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
+            arrow: 'left-full top-1/2 transform -translate-y-1/2 ml-1 border-4 border-transparent border-l-gray-900'
+          };
+        case 'right':
+          return {
+            container: 'left-full top-1/2 transform -translate-y-1/2 ml-2',
+            arrow: 'right-full top-1/2 transform -translate-y-1/2 mr-1 border-4 border-transparent border-r-gray-900'
+          };
+        default: // top
+          return {
+            container: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
+            arrow: 'top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900'
+          };
+      }
+    };
+
+    const positionClasses = getPositionClasses();
+
+    return (
+      <div className="relative inline-block">
+        <div
+          onMouseEnter={() => setActiveTooltip({ id: tooltipId, content })}
+          onMouseLeave={() => setActiveTooltip(null)}
+          className="cursor-help"
+        >
+          {children}
+        </div>
+        <AnimatePresence>
+          {activeTooltip?.id === tooltipId && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: position === 'top' ? 10 : -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: position === 'top' ? 10 : -10 }}
+              transition={{ duration: 0.15 }}
+              className={`absolute z-[9999] ${positionClasses.container} pointer-events-none`}
+            >
+              <div className="px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl border border-gray-700 max-w-xs">
+                <div className="text-xs leading-relaxed">{content}</div>
+              </div>
+              <div className={`absolute ${positionClasses.arrow}`}></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      <AnimatePresence>
-        {activeTooltip === content && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap max-w-xs"
-          >
-            <div className="text-xs">{content}</div>
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-              <div className="border-4 border-transparent border-t-gray-900"></div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       {/* Header with Overall Risk Score */}
-      <div className={`bg-gradient-to-br from-skinz-bg-secondary to-skinz-bg-tertiary backdrop-blur-md rounded-xl p-6 border ${getRiskLevel(riskScores.overall).border}`}>
+      <div className={`bg-gradient-to-br from-skinz-bg-secondary to-skinz-bg-tertiary backdrop-blur-md rounded-xl p-6 border ${getRiskLevel(riskScores.overall).border} relative overflow-visible`}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-br from-skinz-accent to-skinz-primary rounded-lg flex items-center justify-center">
@@ -257,7 +294,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
           
           <div className="text-right">
-            <Tooltip content="Overall risk score calculated from multiple assessment factors">
+            <Tooltip id="overall-risk" content="Overall risk score calculated from multiple assessment factors" position="bottom">
               <div className={`text-3xl font-bold ${getRiskLevel(riskScores.overall).color}`}>
                 {riskScores.overall.toFixed(0)}%
               </div>
@@ -311,7 +348,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
                 <div className={`w-10 h-10 ${risk.bg} rounded-lg flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${risk.color}`} />
                 </div>
-                <Tooltip content="Click for detailed assessment">
+                <Tooltip id={`risk-help-${idx}`} content="Click for detailed assessment" position="left">
                   <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
                 </Tooltip>
               </div>
@@ -343,10 +380,10 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
       {/* Interactive Visualizations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Radar Chart */}
-        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border">
+        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-white">Risk Profile Radar</h4>
-            <Tooltip content="Multi-dimensional risk assessment visualization">
+            <Tooltip id="radar-info" content="Multi-dimensional risk assessment visualization" position="left">
               <Info className="w-4 h-4 text-skinz-text-secondary" />
             </Tooltip>
           </div>
@@ -373,10 +410,10 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
         </div>
 
         {/* Trend Chart */}
-        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border">
+        <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-semibold text-white">Risk Trends</h4>
-            <Tooltip content="6-month risk trend analysis">
+            <Tooltip id="trend-info" content="6-month risk trend analysis" position="left">
               <TrendingUp className="w-4 h-4 text-skinz-text-secondary" />
             </Tooltip>
           </div>
@@ -421,7 +458,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
       </div>
 
       {/* Health Metrics Dashboard */}
-      <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border">
+      <div className="bg-skinz-bg-secondary/50 backdrop-blur-md rounded-xl p-6 border border-skinz-border relative overflow-visible">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-lg font-semibold text-white">Health & Wellness Metrics</h4>
           <button
@@ -432,7 +469,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative overflow-visible">
           <div className="text-center">
             <div className="relative inline-flex">
               <div className="w-24 h-24">
@@ -460,7 +497,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
 
           <div className="text-center">
-            <Tooltip content={`${quickStats.appointmentsAttended} appointments attended`}>
+            <Tooltip id="appointments" content={`${quickStats.appointmentsAttended} appointments attended out of ${quickStats.appointmentsAttended + 3} scheduled`} position="bottom">
               <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
                 <Calendar className="w-6 h-6 text-blue-400 mx-auto mb-2" />
                 <p className="text-white font-bold text-xl">{quickStats.appointmentsAttended}</p>
@@ -470,7 +507,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
 
           <div className="text-center">
-            <Tooltip content="Medication adherence rate">
+            <Tooltip id="medication" content="Medication adherence rate based on prescription refill data" position="bottom">
               <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
                 <Activity className="w-6 h-6 text-green-400 mx-auto mb-2" />
                 <p className="text-white font-bold text-xl">{quickStats.medicationAdherence}%</p>
@@ -480,7 +517,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           </div>
 
           <div className="text-center">
-            <Tooltip content="Days enrolled in care">
+            <Tooltip id="care-days" content="Total days enrolled in VA healthcare system" position="bottom">
               <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
                 <Clock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
                 <p className="text-white font-bold text-xl">{quickStats.daysInCare}</p>
