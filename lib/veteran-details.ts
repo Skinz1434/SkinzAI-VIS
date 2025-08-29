@@ -228,7 +228,7 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
   const deployments = generateDeployments(basicInfo.branch, serviceStart, serviceEnd);
   
   // Get primary MOS for medical condition generation
-  const serviceEra = SERVICE_ERAS.find(era => 
+  const serviceEra = SERVICE_ERAS.find((era: any) => 
     serviceStart.getFullYear() >= era.startYear && serviceStart.getFullYear() <= era.endYear
   ) || SERVICE_ERAS[2];
   const primaryMOS = serviceEra.commonMOS[Math.floor(Math.random() * serviceEra.commonMOS.length)];
@@ -238,8 +238,8 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
   
   // Calculate realistic combined disability rating
   const individualRatings = medicalConditions
-    .filter(condition => condition.serviceConnected)
-    .map(condition => condition.rating);
+    .filter((condition: any) => condition.serviceConnected)
+    .map((condition: any) => condition.rating);
   const combinedRating = calculateCombinedRating(individualRatings);
   
   // Generate realistic financial data
@@ -324,7 +324,7 @@ export function generateVeteranDetails(basicInfo: any): VeteranDetails {
       disabilityRating: combinedRating,
       effectiveDate: new Date(2020, Math.floor(Math.random() * 12), 1),
       
-      conditions: medicalConditions.map(condition => ({
+      conditions: medicalConditions.map((condition: any) => ({
         code: condition.icd10,
         description: condition.name,
         rating: condition.rating,
