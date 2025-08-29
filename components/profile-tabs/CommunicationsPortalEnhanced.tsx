@@ -3,6 +3,16 @@
 import React, { useState } from 'react';
 import { VeteranProfileEnhanced } from '@/lib/veteran-profile-enhanced';
 import { 
+  vaFormsDatabase, 
+  letterTemplatesDatabase, 
+  searchVAForms, 
+  searchLetterTemplates,
+  getFormCategories,
+  getTemplateCategories,
+  type VAForm,
+  type LetterTemplate 
+} from '@/lib/va-forms-database';
+import { 
   MessageSquare, Send, Phone, Mail, FileText, Calendar, 
   Clock, User, CheckCircle, AlertCircle, Eye, Download,
   Plus, Search, Filter, Archive, Star, Paperclip,
@@ -40,24 +50,29 @@ interface Communication {
   };
 }
 
-interface Template {
-  id: string;
-  name: string;
-  category: string;
-  form: string;
-  description: string;
-  content: string;
-  variables: string[];
-  lastUsed?: Date;
-  useCount: number;
+interface DocumentState {
+  searchTerm: string;
+  selectedCategory: string;
+  selectedTemplate: LetterTemplate | null;
+  selectedForm: VAForm | null;
+  variableValues: Record<string, string>;
+  previewMode: boolean;
 }
 
 export default function CommunicationsPortalEnhanced({ veteran }: CommunicationsPortalEnhancedProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'compose' | 'history' | 'templates' | 'tracking' | 'form0820'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'compose' | 'history' | 'templates' | 'tracking' | 'form0820' | 'forms'>('dashboard');
   const [selectedCommunication, setSelectedCommunication] = useState<Communication | null>(null);
   const [showForm0820, setShowForm0820] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [documentState, setDocumentState] = useState<DocumentState>({
+    searchTerm: '',
+    selectedCategory: 'All',
+    selectedTemplate: null,
+    selectedForm: null,
+    variableValues: {},
+    previewMode: false
+  });
 
   // Sample communications data
   const communications: Communication[] = [
@@ -108,8 +123,14 @@ export default function CommunicationsPortalEnhanced({ veteran }: Communications
     }
   ];
 
-  // Document templates
-  const templates: Template[] = [
+  // Get templates from comprehensive database
+  const templates = letterTemplatesDatabase;
+  const vaForms = vaFormsDatabase;
+  const formCategories = getFormCategories();
+  const templateCategories = getTemplateCategories();
+
+  // Legacy template structure for backward compatibility
+  const legacyTemplates = [
     {
       id: 't1',
       name: 'C&P Examination Notice',
@@ -267,16 +288,27 @@ Rating Veterans Service Representative`,
     }
   };
 
-  const applyTemplate = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
-    if (template) {
-      setComposingMessage({
-        ...composingMessage,
-        subject: template.name,
-        content: template.content,
-        templateId
-      });
-    }
+  const applyTemplate = (template: LetterTemplate) => {
+    setDocumentState({
+      ...documentState,
+      selectedTemplate: template,
+      variableValues: {}
+    });
+    setComposingMessage({
+      ...composingMessage,
+      subject: template.name,
+      content: template.content,
+      templateId: template.id
+    });
+  };
+
+  const substituteVariables = (content: string, values: Record<string, string>) => {
+    let result = content;
+    Object.entries(values).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      result = result.replace(regex, value);
+    });
+    return result;
   };
 
   const fillForm0820 = (communication: Communication) => {
@@ -337,14 +369,15 @@ Rating Veterans Service Representative`,
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: MessageSquare },
             { id: 'compose', label: 'Compose', icon: Edit3 },
-            { id: 'history', label: 'Communication History', icon: History },
-            { id: 'templates', label: 'Document Templates', icon: Template },
-            { id: 'tracking', label: 'Tracking & Delivery', icon: Eye },
-            { id: 'form0820', label: 'VA Form 0820', icon: FileText }
+            { id: 'templates', label: 'Letter Templates', icon: Template },
+            { id: 'forms', label: 'VA Forms', icon: Database },
+            { id: 'history', label: 'History', icon: History },
+            { id: 'tracking', label: 'Tracking', icon: Eye },
+            { id: 'form0820', label: 'Form 0820', icon: FileText }
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -594,17 +627,83 @@ Rating Veterans Service Representative`,
                   <label className="block text-skinz-text-secondary text-sm mb-2">Use Template</label>
                   <select
                     value={composingMessage.templateId}
-                    onChange={(e) => applyTemplate(e.target.value)}
+                    onChange={(e) => {
+                      const template = templates.find(t => t.id === e.target.value);
+                      if (template) applyTemplate(template);
+                    }}
                     className="w-full px-3 py-2 bg-skinz-bg-tertiary rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-skinz-accent"
                   >
                     <option value="">Select a template...</option>
-                    {templates.map(template => (
-                      <option key={template.id} value={template.id}>
-                        {template.name} - {template.form}
-                      </option>
-                    ))}
+                    <optgroup label="Examinations">
+                      {templates.filter(t => t.category === 'Examinations').map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Evidence">
+                      {templates.filter(t => t.category === 'Evidence').map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Decisions">
+                      {templates.filter(t => t.category === 'Decisions').map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Notices">
+                      {templates.filter(t => t.category === 'Notices').map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other">
+                      {templates.filter(t => !['Examinations', 'Evidence', 'Decisions', 'Notices'].includes(t.category)).map(template => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
+
+                {/* Variable Substitution */}
+                {documentState.selectedTemplate && (
+                  <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4 mt-4">
+                    <h5 className="text-white font-medium mb-3">Template Variables</h5>
+                    <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                      {documentState.selectedTemplate.variables.slice(0, 8).map(variable => (
+                        <div key={variable}>
+                          <label className="block text-skinz-text-secondary text-xs mb-1">
+                            {variable.replace(/([A-Z])/g, ' $1').trim()}
+                          </label>
+                          <input
+                            type="text"
+                            value={documentState.variableValues[variable] || ''}
+                            onChange={(e) => {
+                              const newValues = {...documentState.variableValues, [variable]: e.target.value};
+                              setDocumentState({...documentState, variableValues: newValues});
+                              const updatedContent = substituteVariables(documentState.selectedTemplate!.content, newValues);
+                              setComposingMessage({...composingMessage, content: updatedContent});
+                            }}
+                            className="w-full px-2 py-1 bg-skinz-bg-primary rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-skinz-accent"
+                            placeholder={`Enter ${variable}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {documentState.selectedTemplate.variables.length > 8 && (
+                      <p className="text-skinz-text-secondary text-xs mt-2">
+                        +{documentState.selectedTemplate.variables.length - 8} more variables...
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="bg-skinz-bg-tertiary/50 rounded-lg p-4">
                   <h5 className="text-white font-medium mb-2">Quick Actions</h5>
@@ -667,8 +766,24 @@ Rating Veterans Service Representative`,
               </button>
             </div>
 
+            {/* Templates Categories */}
+            <div className="mb-4">
+              <select
+                value={documentState.selectedCategory}
+                onChange={(e) => setDocumentState({...documentState, selectedCategory: e.target.value})}
+                className="px-3 py-2 bg-skinz-bg-tertiary rounded-lg text-white text-sm focus:outline-none"
+              >
+                <option value="All">All Categories</option>
+                {templateCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map((template, idx) => (
+              {templates
+                .filter(template => documentState.selectedCategory === 'All' || template.category === documentState.selectedCategory)
+                .map((template, idx) => (
                 <motion.div
                   key={template.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -677,36 +792,56 @@ Rating Veterans Service Representative`,
                   className="bg-skinz-bg-tertiary/50 rounded-lg p-4 border border-skinz-border/50 hover:border-skinz-accent/50 transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-white font-medium">{template.name}</p>
-                      <p className="text-skinz-accent text-sm">{template.form}</p>
+                    <div className="flex-1">
+                      <p className="text-white font-medium text-sm">{template.name}</p>
+                      {template.subcategory && (
+                        <p className="text-skinz-accent text-xs mt-1">{template.subcategory}</p>
+                      )}
                     </div>
-                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded whitespace-nowrap">
                       {template.category}
                     </span>
                   </div>
 
-                  <p className="text-skinz-text-secondary text-sm mb-4 line-clamp-2">
-                    {template.description}
+                  <p className="text-skinz-text-secondary text-xs mb-3 line-clamp-2">
+                    {template.purpose || template.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-xs text-skinz-text-secondary mb-4">
-                    <span>Used {template.useCount} times</span>
-                    <span>Last: {template.lastUsed?.toLocaleDateString()}</span>
+                  {template.regulatory && (
+                    <div className="text-xs bg-skinz-bg-primary px-2 py-1 rounded mb-3">
+                      <span className="text-skinz-text-secondary">Reg: </span>
+                      <span className="text-skinz-accent">{template.regulatory}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 text-xs text-skinz-text-secondary mb-3">
+                    <span className="flex items-center gap-1">
+                      <FileText className="w-3 h-3" />
+                      {template.variables.length} variables
+                    </span>
+                    {template.relatedForms && (
+                      <span className="flex items-center gap-1">
+                        <Database className="w-3 h-3" />
+                        {template.relatedForms.length} forms
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => applyTemplate(template.id)}
+                      onClick={() => {
+                        applyTemplate(template);
+                        setActiveTab('compose');
+                      }}
                       className="flex-1 px-3 py-1 bg-skinz-accent/20 text-skinz-accent rounded hover:bg-skinz-accent/30 transition-colors text-sm"
                     >
                       Use Template
                     </button>
-                    <button className="p-1 hover:bg-skinz-bg-primary rounded">
+                    <button 
+                      onClick={() => setDocumentState({...documentState, selectedTemplate: template, previewMode: true})}
+                      className="p-1 hover:bg-skinz-bg-primary rounded"
+                    >
                       <Eye className="w-4 h-4 text-skinz-text-secondary hover:text-white" />
-                    </button>
-                    <button className="p-1 hover:bg-skinz-bg-primary rounded">
-                      <Edit3 className="w-4 h-4 text-skinz-text-secondary hover:text-white" />
                     </button>
                   </div>
                 </motion.div>
@@ -997,6 +1132,130 @@ Rating Veterans Service Representative`,
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VA Forms Tab */}
+      {activeTab === 'forms' && (
+        <div className="space-y-6">
+          <div className="bg-skinz-bg-secondary/50 rounded-xl p-6 border border-skinz-border">
+            <div className="flex items-center justify-between mb-6">
+              <h4 className="text-lg font-semibold text-white">VA Forms Repository</h4>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="Search forms..."
+                  value={documentState.searchTerm}
+                  onChange={(e) => setDocumentState({...documentState, searchTerm: e.target.value})}
+                  className="px-3 py-2 bg-skinz-bg-tertiary rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-skinz-accent"
+                />
+                <select
+                  value={documentState.selectedCategory}
+                  onChange={(e) => setDocumentState({...documentState, selectedCategory: e.target.value})}
+                  className="px-3 py-2 bg-skinz-bg-tertiary rounded-lg text-white text-sm focus:outline-none"
+                >
+                  <option value="All">All Categories</option>
+                  {formCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Access Forms */}
+            <div className="mb-6">
+              <h5 className="text-white font-medium mb-3">Quick Access Forms</h5>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {['21-526EZ', '21-4142', '21-0995', '21-22', 'SF-1199A', '21-686c', '10-10EZ', '21-2680'].map(formNum => {
+                  const form = vaForms.find(f => f.formNumber.includes(formNum));
+                  if (!form) return null;
+                  return (
+                    <button
+                      key={form.id}
+                      onClick={() => window.open(form.url, '_blank')}
+                      className="px-3 py-2 bg-skinz-accent/20 text-skinz-accent rounded-lg hover:bg-skinz-accent/30 transition-colors text-sm text-left"
+                    >
+                      <p className="font-bold">{formNum}</p>
+                      <p className="text-xs opacity-80 truncate">{form.title.substring(0, 30)}...</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Forms Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {vaForms
+                .filter(form => {
+                  const matchesSearch = documentState.searchTerm === '' || 
+                    form.title.toLowerCase().includes(documentState.searchTerm.toLowerCase()) ||
+                    form.formNumber.toLowerCase().includes(documentState.searchTerm.toLowerCase()) ||
+                    form.description.toLowerCase().includes(documentState.searchTerm.toLowerCase());
+                  const matchesCategory = documentState.selectedCategory === 'All' || form.category === documentState.selectedCategory;
+                  return matchesSearch && matchesCategory;
+                })
+                .slice(0, 30)
+                .map((form, idx) => (
+                  <motion.div
+                    key={form.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.02 }}
+                    className="bg-skinz-bg-tertiary/50 rounded-lg p-4 border border-skinz-border/50 hover:border-skinz-accent/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="text-skinz-accent font-bold text-sm">{form.formNumber}</p>
+                        <p className="text-white font-medium text-sm mt-1 line-clamp-2">{form.title}</p>
+                      </div>
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded whitespace-nowrap">
+                        {form.category}
+                      </span>
+                    </div>
+                    
+                    <p className="text-skinz-text-secondary text-xs mb-3 line-clamp-2">
+                      {form.description}
+                    </p>
+
+                    {form.processingTime && (
+                      <div className="flex items-center gap-2 text-xs text-skinz-text-secondary mb-3">
+                        <Clock className="w-3 h-3" />
+                        <span>{form.processingTime}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => window.open(form.url, '_blank')}
+                        className="flex-1 px-3 py-1 bg-skinz-accent/20 text-skinz-accent rounded hover:bg-skinz-accent/30 transition-colors text-sm flex items-center justify-center gap-1"
+                      >
+                        <Download className="w-3 h-3" />
+                        Open Form
+                      </button>
+                      <button
+                        onClick={() => setDocumentState({...documentState, selectedForm: form})}
+                        className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 transition-colors text-sm"
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {form.relatedForms && form.relatedForms.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-skinz-border/50">
+                        <p className="text-xs text-skinz-text-secondary mb-1">Related Forms:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {form.relatedForms.slice(0, 3).map(related => (
+                            <span key={related} className="text-xs bg-skinz-bg-primary px-2 py-0.5 rounded text-skinz-text-secondary">
+                              {related}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
             </div>
           </div>
         </div>
