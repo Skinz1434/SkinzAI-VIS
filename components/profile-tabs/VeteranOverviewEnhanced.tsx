@@ -333,7 +333,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
           homelessness: { icon: Home, label: 'Housing Risk' },
           mentalHealth: { icon: Brain, label: 'Mental Health' },
           financial: { icon: DollarSign, label: 'Financial Risk' }
-        }).map(([key, { icon: Icon, label }]) => {
+        }).map(([key, { icon: Icon, label }], idx) => {
           const score = riskScores[key as keyof typeof riskScores];
           const risk = getRiskLevel(score);
           
@@ -348,7 +348,7 @@ export default function VeteranOverviewEnhanced({ veteran }: VeteranOverviewEnha
                 <div className={`w-10 h-10 ${risk.bg} rounded-lg flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${risk.color}`} />
                 </div>
-                <Tooltip id={`risk-help-${idx}`} content="Click for detailed assessment" position="left">
+                <Tooltip id={`risk-help-${key}`} content="Click for detailed assessment" position="left">
                   <HelpCircle className="w-4 h-4 text-skinz-text-secondary" />
                 </Tooltip>
               </div>
