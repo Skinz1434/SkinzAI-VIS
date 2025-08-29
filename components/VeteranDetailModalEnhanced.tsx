@@ -32,6 +32,7 @@ import FinancialProfile from './profile-tabs/FinancialProfile';
 import LegalProfile from './profile-tabs/LegalProfile';
 import AuditHistory from './profile-tabs/AuditHistory';
 import AnalyticsInsightsEnhanced from './profile-tabs/AnalyticsInsightsEnhanced';
+import CompleteProfileEnhanced from './profile-tabs/CompleteProfileEnhanced';
 
 interface VeteranDetailModalEnhancedProps {
   veteran: VeteranProfileEnhanced;
@@ -42,7 +43,7 @@ interface VeteranDetailModalEnhancedProps {
 }
 
 type MainTabType = 'overview' | 'profile' | 'analytics' | 'communications' | 'audit';
-type ProfileTabType = 'personal' | 'service' | 'medical' | 'benefits' | 'claims' | 'documents' | 'eligibility' | 'financial' | 'legal';
+type ProfileTabType = 'complete' | 'personal' | 'service' | 'medical' | 'benefits' | 'claims' | 'documents' | 'eligibility' | 'financial' | 'legal';
 
 export function VeteranDetailModalEnhanced({ 
   veteran, 
@@ -52,7 +53,7 @@ export function VeteranDetailModalEnhanced({
   isSyncing 
 }: VeteranDetailModalEnhancedProps) {
   const [activeMainTab, setActiveMainTab] = useState<MainTabType>('overview');
-  const [activeProfileTab, setActiveProfileTab] = useState<ProfileTabType>('personal');
+  const [activeProfileTab, setActiveProfileTab] = useState<ProfileTabType>('complete');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   if (!isOpen) return null;
@@ -76,6 +77,7 @@ export function VeteranDetailModalEnhanced({
   ];
 
   const profileTabs = [
+    { id: 'complete', label: 'Complete Analysis', icon: BarChart3 },
     { id: 'personal', label: 'Personal', icon: User },
     { id: 'service', label: 'Service', icon: Shield },
     { id: 'medical', label: 'Medical', icon: Heart },
@@ -249,6 +251,7 @@ export function VeteranDetailModalEnhanced({
             {activeMainTab === 'overview' && <OverviewDashboard veteran={veteran} />}
             {activeMainTab === 'profile' && (
               <>
+                {activeProfileTab === 'complete' && <CompleteProfileEnhanced veteran={veteran} />}
                 {activeProfileTab === 'personal' && <PersonalProfile veteran={veteran} />}
                 {activeProfileTab === 'service' && <ServiceProfile veteran={veteran} />}
                 {activeProfileTab === 'medical' && <MedicalProfile veteran={veteran} />}
