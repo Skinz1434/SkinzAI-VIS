@@ -31,6 +31,17 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
           { month: 'Apr', score: 80 },
           { month: 'May', score: 85 },
           { month: 'Jun', score: 88 }
+        ],
+        benefitHistory: [
+          { date: new Date(2023, 0, 1), amount: 1500 },
+          { date: new Date(2023, 3, 1), amount: 1650 },
+          { date: new Date(2023, 6, 1), amount: 1800 },
+          { date: new Date(2023, 9, 1), amount: 2000 }
+        ],
+        claimHistory: [
+          { date: new Date(2022, 0, 1), status: 'Approved' },
+          { date: new Date(2022, 6, 1), status: 'Approved' },
+          { date: new Date(2023, 0, 1), status: 'Pending' }
         ]
       },
       predictions: {
@@ -45,7 +56,10 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
         healthRisk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
         financialRisk: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
         housingRisk: Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low',
-        mentalHealthRisk: Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low'
+        mentalHealthRisk: Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
+        suicideRisk: Math.random() > 0.9 ? 'high' : Math.random() > 0.7 ? 'medium' : 'low',
+        homelessnessRisk: Math.random() > 0.85 ? 'high' : Math.random() > 0.6 ? 'medium' : 'low',
+        substanceAbuseRisk: Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low'
       },
       engagement: {
         benefitUtilization: 60 + Math.random() * 35,  // 60-95% utilization
@@ -142,8 +156,83 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
           documents: ['treatment-note-123.pdf']
         }
       ],
-      riskScore: { overall: 35, suicide: 15, homelessness: 10, substance: 20, financial: 25, medical: 40 },
-      predictions: { hospitalizationRisk: 0.25, readmissionRisk: 0.15, medicationAdherence: 0.85, appointmentAdherence: 0.90, benefitsUtilization: 0.75 },
+      dependents: [],
+      financial: {
+        monthlyIncome: 3500,
+        creditScore: 720,
+        directDeposit: {
+          accountType: 'checking',
+          routingNumber: '123456789',
+          accountNumber: '987654321',
+          bankName: 'Navy Federal Credit Union'
+        },
+        debts: [],
+        payments: [
+          { date: new Date(), amount: calculateMonthlyCompensation(details.mpd.disabilityRating || 0, false, 0), type: 'Disability', description: 'Monthly VA disability payment' }
+        ],
+        taxDocuments: [
+          { year: 2023, type: '1099-G', available: true, downloadUrl: '/tax/2023/1099g' }
+        ]
+      },
+      representation: {
+        hasPOA: true,
+        poaName: 'DAV',
+        poaOrganization: 'Disabled American Veterans',
+        poaPhone: '1-800-555-0100',
+        poaEmail: 'dav@example.com'
+      },
+      exposures: details.mpr?.deployments?.map(d => ({
+        type: 'Combat',
+        location: d.location,
+        startDate: d.startDate,
+        endDate: d.endDate,
+        confirmed: true,
+        presumptive: false,
+        relatedConditions: []
+      })) || [],
+      travel: {
+        benefitEligible: true,
+        specialMode: false,
+        reimbursements: []
+      },
+      legalInfo: {
+        powerOfAttorney: {
+          name: 'DAV',
+          type: 'Claims',
+          date: new Date(2020, 0, 1)
+        },
+        powerOfAttorneyHistory: [
+          {
+            name: 'DAV',
+            type: 'Claims',
+            date: new Date(2020, 0, 1),
+            status: 'Active',
+            form2122: 'VA Form 21-22 Filed'
+          }
+        ],
+        willStatus: true,
+        willLastUpdated: new Date(2021, 0, 1),
+        advanceDirectives: true,
+        representation: {
+          attorney: 'None',
+          vso: 'DAV'
+        },
+        form2122History: [
+          {
+            formId: 'VA21-22-001',
+            dateFiled: new Date(2020, 0, 1),
+            representative: 'DAV',
+            type: 'Claims',
+            status: 'Active',
+            effectiveDate: new Date(2020, 0, 15),
+            expirationDate: new Date(2025, 0, 1)
+          }
+        ],
+        pendingActions: [],
+        beneficiaries: [
+          { name: 'Jane Doe', relationship: 'Spouse', percentage: 100 }
+        ]
+      },
       integrations: {
         myHealtheVet: { connected: true, lastSync: new Date(), status: 'Active' },
         vaBenefits: { connected: true, lastSync: new Date(), status: 'Active' },
@@ -163,72 +252,6 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
         }
       },
       auditTrail: [{ timestamp: new Date(), action: 'Profile Accessed', user: 'System Admin', details: 'Routine review', system: 'VIS' }],
-      emergencyInfo: {
-        emergencyContacts: [{ name: 'Jane Doe', relationship: 'Spouse', phone: '555-0100', altPhone: '555-0101' }],
-        bloodType: 'O+',
-        allergies: ['Penicillin'],
-        advanceDirectives: true,
-        organDonor: true
-      },
-      legalInfo: {
-        powerOfAttorney: { name: 'Jane Doe', type: 'Healthcare', date: new Date(2020, 0, 1) },
-        powerOfAttorneyHistory: [
-          { name: 'DAV', type: 'Claims', date: new Date(2019, 6, 1), status: 'Active', form2122: 'VA Form 21-22 Filed' },
-          { name: 'Jane Doe', type: 'Healthcare', date: new Date(2020, 0, 1), status: 'Active', form2122: 'VA Form 21-22 Filed' },
-          { name: 'VFW', type: 'Claims', date: new Date(2018, 3, 15), status: 'Revoked', form2122: 'VA Form 21-22 Revoked' }
-        ],
-        willStatus: true,
-        willLastUpdated: new Date(2021, 6, 1),
-        advanceDirectives: true,
-        representation: {
-          attorney: Math.random() > 0.7 ? 'Private Attorney' : 'None',
-          vso: 'DAV',
-          privateAttorney: Math.random() > 0.7 ? {
-            name: 'John Smith, Esq.',
-            firm: 'Smith & Associates Law Firm',
-            barNumber: 'CA123456',
-            address: '123 Main St, Anytown, CA 90210',
-            phone: '(555) 123-4567',
-            email: 'john.smith@lawfirm.com',
-            feeStructure: {
-              type: Math.random() > 0.5 ? 'percentage' : 'hourly',
-              hourlyRate: Math.random() > 0.5 ? Math.floor(Math.random() * 400) + 200 : undefined,
-              percentage: Math.random() > 0.5 ? Math.floor(Math.random() * 25) + 15 : undefined,
-              monthlyRetainer: Math.random() > 0.3 ? Math.floor(Math.random() * 1000) + 500 : undefined,
-              isProblematic: Math.random() > 0.6 // Red flag for high percentage fees
-            },
-            dateHired: new Date(2022, Math.floor(Math.random() * 12), 1),
-            cases: ['VA Disability Appeal', 'Medical Benefits Claim', 'Education Benefits'],
-            performance: {
-              successRate: Math.random() * 30 + 40, // 40-70% success rate
-              avgProcessingTime: Math.floor(Math.random() * 180) + 60, // 60-240 days
-              clientSatisfaction: Math.random() * 40 + 60 // 60-100%
-            }
-          } : undefined
-        },
-        form2122History: [
-          {
-            formId: 'VA21-22-001',
-            dateFiled: new Date(2019, 6, 1),
-            representative: 'DAV',
-            type: 'Claims',
-            status: 'Approved',
-            effectiveDate: new Date(2019, 6, 15),
-            expirationDate: new Date(2024, 6, 1)
-          },
-          {
-            formId: 'VA21-22-002',
-            dateFiled: new Date(2020, 0, 1),
-            representative: 'Jane Doe',
-            type: 'Healthcare',
-            status: 'Approved',
-            effectiveDate: new Date(2020, 0, 15),
-            expirationDate: new Date(2025, 0, 1)
-          }
-        ],
-        pendingActions: [],
-        beneficiaries: [{ name: 'Jane Doe', relationship: 'Spouse', percentage: 50 }]
-      },
       qualityMetrics: {
         dataCompleteness: 92,
         lastVerification: new Date(),
@@ -239,6 +262,60 @@ export function generateVeteranProfileEnhanced(details: VeteranDetails): Veteran
       insurancePlans: [{ provider: 'TRICARE', planType: 'Prime', policyNumber: 'TC123456', groupNumber: 'MIL001', effectiveDate: new Date(2015, 0, 1), status: 'Active', coverageLevel: 'Family' }],
       appeals: [],
       dischargeStatus: { type: 'Honorable', date: new Date(2010, 11, 31), characterOfService: 'Honorable', reenlistmentCode: 'RE-1' }
+    },
+    communications: {
+      messages: [
+        { id: '1', date: new Date(), from: 'VA Benefits', subject: 'Claim Update', body: 'Your claim has been updated', read: false, category: 'Claims', attachments: [] }
+      ],
+      notifications: [
+        { id: '1', date: new Date(), type: 'info', message: 'New secure message', priority: 'medium', actionRequired: false }
+      ],
+      reminders: [],
+      preferences: {
+        emailNotifications: true,
+        smsNotifications: false,
+        phoneCallsAllowed: true,
+        preferredContactTime: '9AM - 5PM',
+        language: 'English'
+      }
+    },
+    auditTrail: [
+      { timestamp: new Date(), action: 'Profile Created', user: 'System', details: 'Initial profile creation', ipAddress: '127.0.0.1', userAgent: 'Mozilla/5.0', result: 'success' }
+    ],
+    integrations: {
+      myHealtheVet: { connected: true, lastSync: new Date(), recordsAvailable: 150 },
+      dod: { connected: true, lastSync: new Date(), tricare: true },
+      ssa: { connected: false, lastSync: new Date(), ssdi: false, retirement: false },
+      irs: { connected: true, lastSync: new Date(), taxExempt: false }
+    },
+    qualityMetrics: {
+      dataCompleteness: 95,
+      dataAccuracy: 98,
+      lastVerification: new Date(),
+      verificationMethod: 'Automated',
+      outstandingIssues: []
+    },
+    legalInfo: {
+      powersOfAttorney: [
+        { type: 'Healthcare', representative: 'Jane Doe', dateAppointed: new Date(2020, 0, 1), status: 'Active' }
+      ],
+      appeals: [],
+      courtCases: []
+    },
+    emergency: {
+      contacts: [
+        { name: 'Jane Doe', relationship: 'Spouse', phone: '555-0100', altPhone: '555-0101', address: '123 Main St, Anytown, USA', priority: 1 }
+      ],
+      bloodType: 'O+',
+      allergies: ['Penicillin'],
+      medications: [],
+      conditions: [],
+      advanceDirectives: {
+        hasLivingWill: true,
+        dnr: false,
+        hasPowerOfAttorney: true,
+        organDonor: false
+      }
     }
   };
 }
@@ -790,6 +867,12 @@ export interface VeteranProfileEnhanced extends VeteranDetails {
 
 // Generate enhanced mock data
 export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): VeteranProfileEnhanced {
+  // Use the existing function that already has all the correct properties
+  return generateVeteranProfileEnhanced(basicProfile);
+}
+
+/* // Old implementation - commented out as it has TypeScript errors and we're using the new one above
+function generateEnhancedVeteranProfileOld(basicProfile: VeteranDetails): VeteranProfileEnhanced {
   const enhancedProfile: VeteranProfileEnhanced = {
     ...basicProfile,
     profileServices: {
@@ -851,16 +934,11 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
         },
         pensionBenefits: {
           eligible: Math.random() > 0.4,
-          type: ['Disability', 'Non-service', 'Aid & Attendance'][Math.floor(Math.random() * 3)],
-          monthlyAmount: Math.floor(Math.random() * 2000) + 500,
-          effectiveDate: new Date(2020, Math.floor(Math.random() * 12), 1),
         },
         spouseBenefits: {
           eligible: Math.random() > 0.5,
-          dic: Math.random() > 0.3,
-          champva: Math.random() > 0.4,
-          survivorPension: Math.random() > 0.3,
-          educationBenefits: Math.random() > 0.5,
+          enrollmentDate: new Date(2020, Math.floor(Math.random() * 12), 1),
+          percentageUsed: Math.floor(Math.random() * 100),
         },
       },
       
@@ -988,6 +1066,8 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
         substanceAbuseRisk: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
       },
       predictions: {
+        nextAppointment: new Date(Date.now() + Math.floor(Math.random() * 60) * 24 * 60 * 60 * 1000),
+        claimCompletion: new Date(Date.now() + Math.floor(Math.random() * 180) * 24 * 60 * 60 * 1000),
         nextClaimApprovalProbability: Math.random() * 100,
         estimatedProcessingDays: Math.floor(Math.random() * 180) + 30,
         ratingIncreaseLikelihood: Math.random() * 100,
@@ -1162,4 +1242,4 @@ export function generateEnhancedVeteranProfile(basicProfile: VeteranDetails): Ve
   };
 
   return enhancedProfile;
-}
+} */
